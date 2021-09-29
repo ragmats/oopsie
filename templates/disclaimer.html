@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Disclaimer
+{% endblock %}
+
+{% block main %}
+  <h1>Disclaimer</h1>
+
+  <p>While we have taken great care to research the preventative data and statistics (while citing all <a href="{{ url_for('sources') }}">sources</a>) used in this application, we admittedly are not professional researchers, reproductive scientists, or mathematicians. We are also definitely not giving or suggesting medical advice. Therefore, it is not recommended that you use this app beyond educational or entertainment purposes. In other words, it’s not our fault if you have an Oopsie.</p>
+
+  <p style="font-weight:500;">Other Caveats:</p>
+
+  <p>Fertility is complex! This app relies on statistical averages. We have tried, in some cases, to err on the side of caution. For example, initial figures for the Rhythm Method often assume a 6-day fertile window in which sperm live 5 days, the egg lives 1 day (up to 24 hours), and then chances of pregnancy drop immediately to 0% (Wilcox, AJ. et al. NEJM (1998) 394-397, adapted by <a href="https://www.kindara.com/blog/the-statistics-behind-getting-pregnant" target="_blank">Kindara</a>).</p>
+
+  <p>However, sperm and eggs can live longer or shorter based on various factors (commonly age, but there are many). Instead of trying to consider every variable, we simply adjusted our model to allow for the possibility of longer living sperm/eggs, early/late cycles, and other minor anomalies by expanding the possible fertile window to 15 days (during which the added days have a diminishing Oopsie chance until reaching .25% and then 0%). This means the day after ovulation, conventionally 0%, will have an Oopsie chance of 4% (half of ovulation day, which is 8%), the following day 2%, and so on until .25% and then 0% thereafter (until the next fertile window).</p>
+
+  <p>Based on this explanation, the Oopsie chance should be fairly conservative overall. However, if you or your partner(s) have a special situation that affects your fertility or cycle regularity, this app will likely not reflect an accurate Oopsie chance for you. We always recommend your own due diligence (conduct your own research, consult your doctor, etc.).</p>
+
+  <p>In most cases, data is based on one year of "typical use" (as opposed to "perfect use"). The default Oopsie chance (no method) is based on "available evidence in the United States [suggesting] that only about 40% of married couples who do not use contraception (but who still wish to avoid pregnancy) become pregnant within 1 year" (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3638209/" target="_blank">NCBI</a>).</p>
+
+{% endblock %}

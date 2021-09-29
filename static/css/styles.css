@@ -1,0 +1,28 @@
+a {
+    color: #11a8cd;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #ff0066;
+    text-decoration: none;
+}
+
+.inline {
+    display: inline-block;
+}
+
+.tooltip-inner {
+    min-width: 50px;
+    max-width: 550px;
+    text-align: left;
+}
+
+body {
+    background: #303135;
+    color: #bdc0c5;
+}
+
+th, td {
+    color: #bdc0c5;
+}

@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Get Lucky
+{% endblock %}
+
+{% block main %}
+  <h1>Get Lucky</h1>
+  <h2>{{ oopsie_chance }}% Oopsie!</h2>
+
+
+  {% if oopsie_chance > 0 %}
+    {% if (100/oopsie_chance) % 1 == 0 %}
+      <!-- Format non-decimal oopsie_chance with commas -->
+      <p>It's business time! Your chance of an Oopsie today is 1 out of {{ "{:,.0f}".format((100/oopsie_chance)) }}!</p>
+    {% else %}
+      <!-- Format decimal oopsie_chance with commas -->
+      <p>It's business time! Your chance of an Oopsie today is 1 out of {{ "{:,.1f}".format((100/oopsie_chance)) }}!</p>
+    {% endif %}
+  {% else %}
+    <p>It's business time! You have no chance of an Oopsie today!</p>
+  {% endif %}
+
+  <button class="btn btn-secondary" id="get_lucky">Get Lucky</button> <button class="btn btn-secondary" id="reset">Reset</button>
+
+  <br/><br/>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="multipliers" id="x1" value="1" checked>
+    <label class="form-check-label" for="x1">
+      x1
+    </label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="multipliers" id="x10" value="10">
+    <label class="form-check-label" for="x10">
+      x10
+    </label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="multipliers" id="x100" value="100">
+    <label class="form-check-label" for="x100">
+      x100
+    </label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="multipliers" id="x1000" value="1000">
+    <label class="form-check-label" for="x1000">
+      x1,000
+    </label>
+  </div>
+
+    <br/>
+    <!-- Display random number for testing -->
+    <!-- <p id="roll"></p> -->
+
+    <p class="inline" id="rolls_text"></p>
+    <p class="inline" id="rolls"></p><br/>
+    <p class="inline" id="oopsies_text"></p>
+    <p class="inline" id="oopsies"></p><br/>
+    <!-- <p class="inline">Multiplier: </p>
+    <p class="inline" id="multiplier"></p> -->
+
+  <script>
+
+    // Wait until DOM content is loaded, then run script
+    document.addEventListener('DOMContentLoaded', function() {
+
+      let roll = 0;
+      let rolls = 0;
+      let rollsf = null;
+      let oopsies = 0;
+      let oopsie_symbol = "&#128118;" // Baby face... possibly use surprise face (&#128559;) instead
+      let oopsiesf = null;
+      let multipliers = document.getElementsByName('multipliers');
+      let multiplier = 0;
+      let oopsie_chance = null;
+
+      if ({{ oopsie_chance }} > 0) {
+        oopsie_chance = {{ oopsie_chance }};
+      }
+
+        // When roll is clicked, display result
+        document.querySelector('#get_lucky').addEventListener('click', function() {
+
+          // Find and set checked multiplier
+          for (let i = 0; i < multipliers.length; i++) {
+            if (multipliers[i].checked) {
+              multiplier = multipliers[i].value;
+            }
+          }
+
+          // document.querySelector('#multiplier').innerHTML = multiplier
+
+          // Loop based on checked multiplier
+          for (let i = 0; i < multiplier; i++) {
+            // Increment rolls
+            rolls++;
+            // Format rolls with commas
+            rollsf = rolls.toLocaleString("en-US");
+            document.querySelector('#rolls_text').innerHTML = 'Rolls:';
+            document.querySelector('#rolls').innerHTML = rollsf;
+
+            // Handle oopsie chances that are 1 or greater
+            if (oopsie_chance >= 1) {
+              // Get a random number between 1 and 10,000
+              roll = Math.floor(Math.random() * 10000 + 1);
+
+              // If roll is within oopsie_chance % of 10,000
+              // e.g. 40% oopsie_chance would need to be between 1 to 4,000
+              // The range of 10,000 is for greater accuracy of oopsie chances with decimals
+              if (roll >= 1 && roll <= ((oopsie_chance * 100).toFixed())) {
+                // Increment oopsies
+                oopsies++;
+                // Format oopsies with commas
+                oopsiesf = oopsies.toLocaleString("en-US");
+              }
+
+            // Handle oopsie chances below 1 and above zero
+            } else {
+              // Get a random number between 1 and 100/oopsie_chance (if oopsie_chance is no zero)
+              // Multiplying by 100 is for greater accuracy of oopsie chances with decimals
+              roll = Math.floor(Math.random() * ((100/oopsie_chance) * 100).toFixed() + 1);
+
+              // If roll is in a range of 1 to 100 out of 100/oopsie_chance * 100
+              // e.g. .15% oopsie chance would need to roll between 1 to 100 out of 6,666
+              if (roll >= 1 && roll <= 100) {
+                // Increment oopsies
+                oopsies++;
+                // Format oopsies with commas
+                oopsiesf = oopsies.toLocaleString("en-US");
+              }
+            }
+
+            <!-- Display random number for testing -->
+            // document.querySelector('#roll').innerHTML = roll;
+
+            document.querySelector('#oopsies_text').innerHTML = 'Oopsies:';
+
+            if (oopsies < 1) {
+              document.querySelector('#oopsies').innerHTML = "All clear!";
+            }
+            else {
+              // Repeat oopsie symbol for number of oopsies and also display a numeric total
+              document.querySelector('#oopsies').innerHTML = oopsie_symbol.repeat(oopsies) + "(" + oopsiesf + ")";
+            }
+          }
+        });
+
+        // When reset is clicked, clear results
+        document.querySelector('#reset').addEventListener('click', function() {
+
+          document.querySelector('#rolls_text').innerHTML = null;
+          rolls = null;
+          document.querySelector('#oopsies_text').innerHTML = null;
+          oopsies = null;
+          document.querySelector('#rolls').innerHTML = null;
+          document.querySelector('#oopsies').innerHTML = null;
+        });
+
+    });
+
+  </script>
+{% endblock %}

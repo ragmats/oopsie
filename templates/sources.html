@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Sources
+{% endblock %}
+
+{% block main %}
+  <h1>Sources</h1>
+  <table class="table table-dark table-striped ">
+    <thead>
+      <tr>
+          <th width="200">Method</th>
+          <th width="150">Chance</th>
+          <th>Definition</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+        <tr>
+          <td>
+            {{ row.method }}
+          </td>
+          <td>
+            {% if (row.chance * 100)|round(5) % 1 == 0 %}
+              {{ (row.chance * 100)|int }}% (<a href="{{ row.source }}" target="_blank">{{ row.source_name }}</a>)
+            {% else %}
+              {{ (row.chance * 100)|round(5) }}% (<a href="{{ row.source }}" target="_blank">{{ row.source_name }}</a>)
+            {% endif %}
+          </td>
+          <td>
+            {{ row.info }} (<a href="{{ row.info_source }}" target="_blank">{{ row.info_source_name }}</a>)
+          </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <br/>
+  <p style="font-weight:500;">Addionally, we assume ovulation occurs, on average, at the midpoint of the cycle (<a href="https://www.mayoclinic.org/healthy-lifestyle/getting-pregnant/expert-answers/ovulation-signs/faq-20058000" target="_blank">Mayo Clinic</a>) and that period bleeding usually lasts, also on average, 5 days (<a href="https://en.wikipedia.org/wiki/Menstruation" target="_blank">Wikipedia</a>).</p>
+
+  {% endblock %}
