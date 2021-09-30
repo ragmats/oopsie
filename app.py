@@ -7,6 +7,7 @@
 # TODO deploy to Heroku
 # TODO check other pages in Safari
 # TODO Google analytics
+# TODO make month view look better on mobile
 # TODO make month view only show 1 year future and past
 
 from types import prepare_class

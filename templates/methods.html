@@ -36,15 +36,15 @@
             <label class="form-check-label" for="{{ row.id }}">
               {% if rhythm_chance != None and row.id == 21 %}
                 {% if (rhythm_chance * 100)|round(5) % 1 == 0 %}
-                  {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|int }}% Oopsie)">&#9432;</a>
+                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|int }}% Oopsie)">&#9432;</a>
                 {% else %}
-                  {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
                 {% endif %}
               {% else %}
                 {% if (row.chance * 100)|round(5) % 1 == 0 %}
-                  {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
+                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
                 {% else %}
-                  {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
                 {% endif %}
               {% endif %}
               </label>
@@ -61,7 +61,7 @@
           {% else %}
             <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start">
           {% endif %}
-          <a href="#" data-bs-toggle="tooltip" title="If you don't know the cycle start date or ovulation date, the Rythm Method will default to a constant Oopsie chance of 24%.">&#9432;</a>
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't know the cycle start date or ovulation date, the Rythm Method will default to a constant Oopsie chance of 24%.">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="cycle_length">Cycle Length (days): </label>
@@ -70,7 +70,7 @@
           {% else %}
             <input class="form-input" style="width: 50px;" type="number" placeholder="28" id="cycle_length" name="cycle_length" min="21" max="35" value="28">
           {% endif %}
-          <a href="#" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume the average of 28 days.">&#9432;</a>
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume the average of 28 days.">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="period_length">Period Length (days): </label>
@@ -79,7 +79,7 @@
           {% else %}
             <input class="form-input" style="width: 50px;" type="number" placeholder="5" id="period_length" name="period_length" min="0" max="35" value="5">
           {% endif %}
-          <a href="#" data-bs-toggle="tooltip" title="Enter a period length if you want to see days of bleeding on the calendar. By default, we will assume an average of 5 days. If you do not wish to view bleeding on the calendar, set to zero and save (will not affect the Oopsie chance).">&#9432;</a>
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a period length if you want to see days of bleeding on the calendar. By default, we will assume an average of 5 days. If you do not wish to view bleeding on the calendar, set to zero and save (will not affect the Oopsie chance).">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="cycle_day_ovulation">Cycle Day of Ovulation: </label>
@@ -88,7 +88,7 @@
           {% else %}
             <input class="form-input" style="width: 50px;" type="number" placeholder="14" id="cycle_day_ovulation" name="cycle_day_ovulation" min="1" max="35" value="14">
           {% endif %}
-          <a href="#" data-bs-toggle="tooltip" title="If you don't enter a cycle day of ovulation, we will assume the midpoint of the cycle.">&#9432;</a>
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter a cycle day of ovulation, we will assume the midpoint of the cycle.">&#9432;</a>
         </div>
       </td>
     <tr>
@@ -108,9 +108,9 @@
             {% endif %}
             <label class="form-check-label" for="{{ row.id }}">
               {% if (row.chance * 100)|round(5) % 1 == 0 %}
-                {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
+                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
               {% else %}
-                {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
               {% endif %}
               </label>
           </div>
@@ -134,9 +134,9 @@
             {% endif %}
             <label class="form-check-label" for="{{ row.id }}">
               {% if (row.chance * 100)|round(5) % 1 == 0 %}
-                {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
+                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
               {% else %}
-                {{ row.method }} <a href="#" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
               {% endif %}
             </label>
           </div>
