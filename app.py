@@ -3,8 +3,6 @@
 #  stevencoy@gmail.com  #
 #########################
 
-# TODO bug test on new day
-# TODO deploy to Heroku
 # TODO check other pages in Safari
 # TODO Google analytics
 # TODO make month view look better on mobile
