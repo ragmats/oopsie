@@ -15,7 +15,7 @@ Once the user saves selections from the methods page, a number of calculations o
 Some challenges:
 - Getting started: It took a good number of days to figure out my own coding environment without the use of CS50 IDE. (I wanted to make sure I could complete a project without it as a crutch.) I am coding on a Windows 10 PC, using VS Code as my text editor. Setting up Python, Flask, and a virtual environment were all hurdles in the beginning, which I got over with the help of many YouTube tutorials (Caleb Curry, Codemy, Socratica Python, Pretty Printed).
 - Condensing my code: I was able to clean up a lot of repeptition with functions, but there are still some areas where many variables are declared and this feels unideal. This is even sometimes repeated, like where the home page can be navigated to via POST or GET. I would like to know how to condense and clean my code further.
-- Getting things to work/appear correctly in Safari: I used a PC to code and tested with Chrome, later to realize much of it did not appear correctly on Safari. Safari, for example, does not support a date input, so I had to add validation for the date input. Some of the CSS was also not working in Safari, at least in older versions of the browser I was able to test (perhaps due to JavaScript not being enabled).
+- Getting things to work/appear correctly in Safari: I used a PC to code and tested with Chrome, later to realize much of it did not appear correctly on Safari. Safari, for example, does not support a date input, so I had to add validation for the date input. Some of the CSS was also not working in Safari, at least in older versions of the browser I was able to test.
 
 <span>app.py</span> contains the following functions:
 
