@@ -8,7 +8,6 @@ from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
-import os
 
 # Configure application
 app = Flask(__name__)
@@ -29,7 +28,7 @@ app = Flask(__name__)
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 999)
-app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SECRET_KEY'] = "my_secret_key"
 app.config['SESSION_COOKIE_NAME'] = "my_session"
 Session(app)
 
