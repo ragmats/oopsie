@@ -3,7 +3,6 @@
 #  stevencoy@gmail.com  #
 #########################
 
-from types import prepare_class
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
