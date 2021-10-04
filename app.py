@@ -5,6 +5,7 @@
 
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
+import redis
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
 
@@ -23,13 +24,26 @@ app = Flask(__name__)
     # https://www.youtube.com/watch?v=eirjjyP2qcQ&ab_channel=CoreySchafer
     # https://stackoverflow.com/questions/29779155/converting-string-yyyy-mm-dd-into-datetime-python
 
-# Configure Flask-Session library
+# # Configure Flask-Session library
+# app.config["SESSION_PERMANENT"] = True
+# app.config["SESSION_TYPE"] = "filesystem"
+# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 999)
+# app.config['SECRET_KEY'] = "my_secret_key"
+# app.config['SESSION_COOKIE_NAME'] = "my_session"
+# Session(app)
+
+# Configure Redis for deployment
+# redis learned from:
+    # https://testdriven.io/blog/flask-server-side-sessions/
+app.config['SESSION_TYPE'] = "redis"
 app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 999)
+app.config['SESSION_USE_SIGNER'] = True
 app.config['SECRET_KEY'] = "my_secret_key"
-app.config['SESSION_COOKIE_NAME'] = "my_session"
-Session(app)
+app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
+
+# Create and initialize the Flask-Session object AFTER `app` has been configured
+server_session = Session(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///oopsie.db"
 
