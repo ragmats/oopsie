@@ -15,7 +15,8 @@ Once the user saves selections from the methods page, a number of calculations o
 Some challenges:
 - Getting started: It took a good number of days to figure out my own coding environment without the use of CS50 IDE. (I wanted to make sure I could complete a project without it as a crutch.) I am coding on a Windows 10 PC, using VS Code as my text editor. Setting up Python, Flask, and a virtual environment were all hurdles in the beginning, which I got over with the help of many YouTube tutorials (Caleb Curry, Codemy, Socratica Python, Pretty Printed).
 - Condensing my code: I was able to clean up a lot of repeptition with functions, but there are still some areas where many variables are declared and this feels unideal. This is even sometimes repeated, like where the home page can be navigated to via POST or GET. I would like to know how to condense and clean my code further.
-- Getting things to work/appear correctly in Safari: I used a PC to code and tested with Chrome, later to realize much of it did not appear correctly on Safari. Safari, for example, does not support a date input, so I had to add validation for the date input. Some of the CSS was also not working in Safari, at least in older versions of the browser I was able to test.
+- Some features (tooltips, "Get Lucky" JavaScript, etc.) do not work in older browsers. Safari does not support a date input, so I had to add validation for the date input.
+- Deployment was an unexpected nightmare. My sessions were not persisting on Heroku because I was using the filesystem. Once I switched to cookies, I had to convert my database object to a list of Python dictionaries so it would be JSON serializable. Then, any date object that entered the session would come out with a different format, so I converted all the dates to strings before passing them to the session as a quick fix.
 
 <span>app.py</span> contains the following functions:
 
@@ -44,26 +45,27 @@ Some challenges:
 23. get_rhythm_chance - Returns Rhythm Method chance given cycle and and ovulation day.
 24. get_chances - Returns list of chances based on list of user-selected IDs.
 25. get_oopsie - Calculates rounded chance of Oopsie pregnancy based on list of user-selected chances.
+26. make_serializable - Returns JSON serializable value given database object
 
 ## Static Files:
 ### styles.css
-CSS...
+Used this for basic styling, notably adjustments for the tooltips and logo SVG.
 
 ## Templates:
 ### layout.html
-Contains the navbar from Bootstrap and extends to other HTML pages.
+Contains the navbar from Bootstrap and extends to other HTML pages. Footer contains scripts for tooltips.
 
 ### index.html
-x
+The homepage, which displays the current oopsie chance (and other details) based on user selections. If rhythm method has been selected, then time-based calculations will display for the current day, yesterday, and tomorrow.
 
 ### methods.html
-x
-
-### get_lucky.html
-x
+The user can select any number of methods via checkboxes and save. Data is stored in session cookies. A "Clear All Saved Data" button resets all session variables. A "Check all" checkbox selects and de-selects all checkboxes via JavaScript.
 
 ### month_view.html
-x
+Uses Full Callendar, a JavaScript calendar (https://fullcalendar.io/), to display the varying oopsie chances (and other details) of each day on a calendar. Details are populated on the backend and passed as a single "events" variable.
+
+### get_lucky.html
+A JavaScript simulation based on the current oopsie chance. Can adjust multiplier x1, x10, x100, and x1,000. Number of rolls are tracked. When an oopsie occurs, an emoji is added and a total count is incremented. The user can reset the simulation, or navigate away (state not saved in session).
 
 ### about.html
 Gives information about this application that may be of interest to users.

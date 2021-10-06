@@ -27,16 +27,10 @@ app = Flask(__name__)
 
 app.secret_key = "NDQc#@5~cgKT)mv2qG<c(B@!"
 
-# Configure Flask-Session library
+# Configure Flask-Session library for cookies
 app.config["SESSION_PERMANENT"] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 9999)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=9999)
 app.config['SESSION_COOKIE_NAME'] = "my_session"
-
-# # Configure Flask-Session library
-# app.config["SESSION_TYPE"] = "filesystem"
-# app.config["SESSION_PERMANENT"] = True
-# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 9999)
-# Session(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///oopsie.db"
 
@@ -63,15 +57,12 @@ todayf = date.today().strftime("%A, %B %d, %Y")
 tomorrowf = tomorrow.strftime("%m/%d/%Y")
 yesterdayf = yesterday.strftime("%m/%d/%Y")
 
-# @app.route("/")
-# def hello_world():
-#     greeting = "Hello, World!"
-#     session["greeting"] = greeting
-#     print(session["greeting"])
+# Learned from:
+    # https://stackoverflow.com/questions/34118093/flask-permanent-session-where-to-define-them
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
 
-#     return "<p>Hello, World!</p>"
-
-# '''
 @app.route("/", methods=["GET", "POST"])
 def index():
     print(datetime.today())
