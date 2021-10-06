@@ -466,8 +466,8 @@ def month_view():
         # Create empty events object for calendar
         events = []
 
-        # Populate calendar events for 365 days past and future
-        for i in range(-365, 365):
+        # Populate calendar events for X days past and future
+        for i in range(-90, 90):
 
             # If no selections are remembered in the session, or first-time visit, set oopsie chance to default (40%)
             if not session.get("selections"):
