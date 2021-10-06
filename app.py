@@ -4,11 +4,8 @@
 #########################
 
 from flask import Flask, render_template, request, session, redirect
-from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
-import json
-import os
 
 # Configure application
 app = Flask(__name__)
@@ -28,11 +25,12 @@ app = Flask(__name__)
 # Learned session cookies from:
     # https://testdriven.io/blog/flask-sessions/
 
-app.secret_key = "TEMP_SECRET_KEY"
+app.secret_key = "NDQc#@5~cgKT)mv2qG<c(B@!"
 
 # Configure Flask-Session library
 app.config["SESSION_PERMANENT"] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 9999)
+app.config['SESSION_COOKIE_NAME'] = "my_session"
 
 # # Configure Flask-Session library
 # app.config["SESSION_TYPE"] = "filesystem"
