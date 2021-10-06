@@ -7,6 +7,8 @@ from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
+import json
+import os
 
 # Configure application
 app = Flask(__name__)
@@ -23,13 +25,20 @@ app = Flask(__name__)
     # https://www.youtube.com/watch?v=eirjjyP2qcQ&ab_channel=CoreySchafer
     # https://stackoverflow.com/questions/29779155/converting-string-yyyy-mm-dd-into-datetime-python
 
+# Learned session cookies from:
+    # https://testdriven.io/blog/flask-sessions/
+
+app.secret_key = "TEMP_SECRET_KEY"
+
 # Configure Flask-Session library
 app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 999)
-app.config['SECRET_KEY'] = "my_secret_key"
-app.config['SESSION_COOKIE_NAME'] = "my_session"
-Session(app)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 9999)
+
+# # Configure Flask-Session library
+# app.config["SESSION_TYPE"] = "filesystem"
+# app.config["SESSION_PERMANENT"] = True
+# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days = 9999)
+# Session(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///oopsie.db"
 
@@ -56,7 +65,15 @@ todayf = date.today().strftime("%A, %B %d, %Y")
 tomorrowf = tomorrow.strftime("%m/%d/%Y")
 yesterdayf = yesterday.strftime("%m/%d/%Y")
 
+# @app.route("/")
+# def hello_world():
+#     greeting = "Hello, World!"
+#     session["greeting"] = greeting
+#     print(session["greeting"])
 
+#     return "<p>Hello, World!</p>"
+
+# '''
 @app.route("/", methods=["GET", "POST"])
 def index():
     print(datetime.today())
@@ -99,7 +116,7 @@ def index():
         else:
             # Set last save to today and reload saved session variables
             print("New load!")
-            session["selections_date_last_saved"] = today
+            session["selections_date_last_saved"] = str(today)
             session["selections_saved"] = session.get("selections")
             session["cycle_start_str_saved"] = session.get("cycle_start_str")
             session["cycle_length_saved"] = session.get("cycle_length")
@@ -153,7 +170,10 @@ def index():
                 session["chances_tomorrow"] = get_chances(session.get("selections"), rhythm_chance_tomorrow)
 
                 # Get rows of methods from database based on user-selected method IDs
-                methods = session["methods"] = Methods.query.filter(Methods.id.in_(session.get("selections"))).order_by(Methods.method).all()
+                methods = Methods.query.filter(Methods.id.in_(session.get("selections"))).order_by(Methods.method).all()
+
+                # Convert methods object to Python dictionary so it is JSON serializable (required for session["methods"])
+                session["methods"] = make_serializable(methods)
 
                 # Calculate oopsie chance by multiplying chances values
                 oopsie_chance = session["oopsie_chance"] = get_oopsie(session.get("chances"))
@@ -219,7 +239,7 @@ def index():
         else:
 
             # If day is unchanged from previous save, quick load variables from session
-            if session.get("selections_date_last_saved") == today:
+            if session.get("selections_date_last_saved") == str(today):
                 print("Quick load!")
                 oopsie_chance = session.get("oopsie_chance")
                 oopsie_chance_yesterday = session.get("oopsie_chance_yesterday")
@@ -243,7 +263,7 @@ def index():
             else:
                 # Set last save to today and reload saved session variables
                 print("New load!")
-                session["selections_date_last_saved"] = today
+                session["selections_date_last_saved"] = str(today)
                 session["selections_saved"] = session.get("selections")
                 session["cycle_start_str_saved"] = session.get("cycle_start_str")
                 session["cycle_length_saved"] = session.get("cycle_length")
@@ -295,7 +315,10 @@ def index():
                 session["chances_tomorrow"] = get_chances(session.get("selections"), rhythm_chance_tomorrow)
 
                 # Get rows of methods from database based on user-selected method IDs
-                methods = session["methods"] = Methods.query.filter(Methods.id.in_(session.get("selections"))).order_by(Methods.method).all()
+                methods = Methods.query.filter(Methods.id.in_(session.get("selections"))).order_by(Methods.method).all()
+
+                # Convert methods object to Python dictionary so it is JSON serializable (required for session["methods"])
+                session["methods"] = make_serializable(methods)
 
                 # Calculate oopsie chance by multiplying chances values
                 oopsie_chance = session["oopsie_chance"] = get_oopsie(session.get("chances"))
@@ -327,7 +350,7 @@ def methods():
     cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
 
     # If day is the same, quick load rhythm chance for tooltip display
-    if session.get("methods_date_last_saved") == today:
+    if session.get("methods_date_last_saved") == str(today):
         print("Quick load!")
         if session.get("rhythm_chance") != None and cycle_start:
             rhythm_chance = session.get("rhythm_chance")
@@ -338,7 +361,7 @@ def methods():
     else:
         # Set last save to today
         print("New load!")
-        session["methods_date_last_saved"] = today
+        session["methods_date_last_saved"] = str(today)
 
         # If there is a cycle start, get cycle day and rhythm method chance
         if cycle_start:
@@ -360,7 +383,7 @@ def clear():
     session["cycle_length"] = session["cycle_length_saved"] = session["calendar_cycle_length_saved"] = 28
     session["period_length"] = session["period_length_saved"] = session["calendar_period_length_saved"] = 5
     session["cycle_day_ovulation"] = session["cycle_day_ovulation_saved"] = session["calendar_cycle_day_ovulation_saved"] = 14
-    session["selections_date_last_saved"] = session["lucky_date_last_saved"] = session["calendar_date_last_saved"] = today
+    session["selections_date_last_saved"] = session["lucky_date_last_saved"] = session["calendar_date_last_saved"] = str(today)
 
     return redirect("/methods")
 
@@ -377,7 +400,7 @@ def get_lucky():
     else:
 
         # If day is unchanged from previous save, quick load variables from session
-        if session.get("lucky_date_last_saved") == today:
+        if session.get("lucky_date_last_saved") == str(today):
             print("Quick load!")
             oopsie_chance = session.get("oopsie_chance")
 
@@ -385,7 +408,7 @@ def get_lucky():
         else:
             # Set last save to today
             print("New load!")
-            session["lucky_date_last_saved"] = today
+            session["lucky_date_last_saved"] = str(today)
 
             # Get correct cycle start, cycle length, and ovulation cycle day
             cycle_start = get_cycle_start(session.get("cycle_start_str"))
@@ -428,7 +451,7 @@ def month_view():
     else:
         # Set last save to today
         print("New load!")
-        session["calendar_date_last_saved"] = today
+        session["calendar_date_last_saved"] = str(today)
 
         # If selections are remembered in the session, reload saved session variables
         if session.get("selections"):
@@ -477,7 +500,7 @@ def month_view():
             # Add Oopsie % to calendar for the i'th day
             events.append({
                 "title": str(oopsie_chance) + "% Oopsie!",
-                "date": get_date(i),
+                "date": str(get_date(i)),
             })
 
             # Add cycle day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
@@ -539,7 +562,7 @@ def contact():
 def check_saved_data(date_last_saved, selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
     """Returns True if new selections match saved selections and the last save was today"""
 
-    if today == date_last_saved:
+    if str(today) == date_last_saved:
         if (selections == session.get("selections_saved") and
             cycle_start_str == session.get("cycle_start_str_saved") and
             cycle_length == session.get("cycle_length_saved") and
@@ -553,7 +576,7 @@ def check_saved_data(date_last_saved, selections, cycle_start_str, cycle_length,
 def check_saved_calendar(selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
     """Returns True if new selections match saved selections and the calendar has been reloaded in the last 30 days"""
 
-    if ((session.get("calendar_date_last_saved") + timedelta(days=30)) - today).days > 0:
+    if ((datetime.strptime(session.get("calendar_date_last_saved"), "%Y-%m-%d").date() + timedelta(days=30)) - today).days > 0:
         if (selections == session.get("calendar_selections_saved") and
             cycle_start_str == session.get("calendar_cycle_start_str_saved") and
             cycle_length == session.get("calendar_cycle_length_saved") and
@@ -791,3 +814,27 @@ def get_oopsie(chances):
         oopsie_chance = int(oopsie_chance)
 
     return round(oopsie_chance, 5)
+
+
+def make_serializable(object):
+    """Returns JSON serializable value given database object"""
+
+    session_dict = {}
+    session_list=[]
+
+    for row in object:
+        session_dict = {
+            "id": row.id,
+            "method": row.method,
+            "type": row.type,
+            "chance": row.chance,
+            "source": row.source,
+            "info": row.info,
+            "info_source": row.info_source,
+            "source_name": row.source_name,
+            "info_source_name": row.info_source_name}
+
+        session_list.append(session_dict)
+
+    # Return a list of dictionaries
+    return session_list
