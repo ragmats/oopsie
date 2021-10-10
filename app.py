@@ -27,9 +27,9 @@ app = Flask(__name__)
 
 app.secret_key = "NDQc#@5~cgKT)mv2qG<c(B@!"
 
-# Configure Flask-Session library for cookies
+# Configure Flask session cookies
 app.config["SESSION_PERMANENT"] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=9999)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=10000)
 app.config['SESSION_COOKIE_NAME'] = "my_session"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///oopsie.db"
@@ -194,11 +194,12 @@ def index():
                 session["selections_date_last_saved"] = None
 
                 # Get data from database for display on Methods page
+                cycle_awareness = Methods.query.filter_by(type="cycle_awareness").order_by(Methods.id).all()
                 contraception = Methods.query.filter_by(type="contraception").order_by(Methods.id).all()
                 method = Methods.query.filter_by(type="method").order_by(Methods.id).all()
                 surgical = Methods.query.filter_by(type="surgical procedure").order_by(Methods.id).all()
 
-                return render_template("methods.html", contraception=contraception, method=method, surgical=surgical, selections=session.get("selections"), cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, date_error=date_error, length_error=length_error)
+                return render_template("methods.html", contraception=contraception, cycle_awareness=cycle_awareness, method=method, surgical=surgical, selections=session.get("selections"), cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, date_error=date_error, length_error=length_error)
 
     # When user navigates back to homepage without clicking "save" from Methods page...
     else:
@@ -322,6 +323,7 @@ def methods():
     """Returns methods page, where the user selects, saves, or clears method selections"""
 
     # Get data from database
+    cycle_awareness = Methods.query.filter_by(type="cycle_awareness").order_by(Methods.id).all()
     contraception = Methods.query.filter_by(type="contraception").order_by(Methods.id).all()
     method = Methods.query.filter_by(type="method").order_by(Methods.id).all()
     surgical = Methods.query.filter_by(type="surgical procedure").order_by(Methods.id).all()
@@ -360,7 +362,7 @@ def methods():
             cycle_day = None
             rhythm_chance = None
 
-    return render_template("methods.html", contraception=contraception, method=method, surgical=surgical, selections=selections, cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance)
+    return render_template("methods.html", cycle_awareness=cycle_awareness, contraception=contraception, method=method, surgical=surgical, selections=selections, cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance)
 
 
 @app.route("/clear")
@@ -421,8 +423,8 @@ def get_lucky():
     return render_template("get_lucky.html", oopsie_chance=oopsie_chance)
 
 
-@app.route("/month_view")
-def month_view():
+@app.route("/calendar")
+def calendar():
     """Returns calendar page, where the user views a calendar of Oopsie chances, cycle days, ovulation days, period days, etc."""
 
     # Calendar by:
@@ -502,21 +504,21 @@ def month_view():
             # Add period day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
             if cycle_start and "21" in session.get("selections") and (check_period(cycle_day, period_length)):
                 events.append({
-                    "title": "Period/bleeding",
+                    "title": "Period Day",
                     "date": str(get_date(i)) + "T00:00:00",
                 })
 
             # Add ovulation day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
             if cycle_start and "21" in session.get("selections") and (check_ovulation(cycle_day, cycle_day_ovulation)):
                 events.append({
-                    "title": "Ovulation day",
+                    "title": "Ovulation Day",
                     "date": str(get_date(i)) + "T00:00:00",
                 })
 
         # Save events in session
         session["saved_events"] = events
 
-    return render_template("month_view.html", events=events)
+    return render_template("calendar.html", events=events)
 
 
 @app.route("/about")
@@ -696,7 +698,8 @@ def get_period_length(period_length_session):
     """Returns period length as int if it is saved in the session, otherwise return default (5)"""
 
     # If period length is in session, convert string to int, otherwise set to default (5 days)
-    if period_length_session != None:
+
+    if period_length_session != None and period_length_session != "":
         period_length = int(period_length_session)
     else:
         period_length = 5

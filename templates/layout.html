@@ -18,7 +18,7 @@
     <!-- Fav icon -->
     <link rel="icon" type="image/png" href="static/images/favicon.ico"/>
 
-    <title>Oopsie {% block title %}{% endblock %}</title>
+    <title>Oopsie - {% block title %}{% endblock %}</title>
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
@@ -33,7 +33,7 @@
                 <a class="nav-link" href="{{ url_for('methods') }}">Methods</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('month_view') }}">Month View</a>
+                <a class="nav-link" href="{{ url_for('calendar') }}">Calendar</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('get_lucky') }}">Get Lucky</a>
@@ -62,6 +62,7 @@
     </nav>
 
     <div class="container">
+        <br/>
         {% block main %}{% endblock %}
     </div>
 

@@ -4,8 +4,17 @@ a {
 }
 
 a:hover {
-    color: #ff0066;
+    color: #81c0cf;
     text-decoration: none;
+}
+
+a.period {
+    color: rgb(255, 50, 50);
+    text-decoration: none;
+}
+
+a.period:hover {
+    color: rgb(255, 50, 50);
 }
 
 a.svg {

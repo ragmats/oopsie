@@ -1,15 +1,19 @@
 {% extends "layout.html" %}
 
 {% block title %}
-  Methods
+  Methods & Preventions
 {% endblock %}
 
 {% block main %}
+  <h1>Methods</h1>
+  <p>Select any combination of the preventative methods below to find your Oopsie chance.</p>
+
   <form action="{{ url_for('index') }}" method="POST">
     <table>
       <tr>
         <td colspan="2">
-          <h1>Methods</h1>
+          <h2>Cycle Awareness</h2>
+          <p>&#128161; Recommended, with a period start, for the best results</p>
           {% if date_error %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
               {{ date_error }}
@@ -24,7 +28,7 @@
           {% endif %}
         </td>
       </tr>
-    {% for row in method %}
+    {% for row in cycle_awareness %}
       <tr>
         <td>
           <div class="form-check">
@@ -66,35 +70,62 @@
         <div class="form-check">
           <label class="form-label" for="cycle_length">Cycle Length (days): </label>
           {% if cycle_length %}
-            <input class="form-input" style="width: 50px;" type="number" placeholder="28" id="cycle_length" name="cycle_length" min="21" max="35" value="{{ cycle_length }}">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" min="21" max="40" value="{{ cycle_length }}">
           {% else %}
-            <input class="form-input" style="width: 50px;" type="number" placeholder="28" id="cycle_length" name="cycle_length" min="21" max="35" value="28">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" min="21" max="40" value="28">
           {% endif %}
           <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume the average of 28 days.">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="period_length">Period Length (days): </label>
           {% if period_length != None %}
-            <input class="form-input" style="width: 50px;" type="number" placeholder="5" id="period_length" name="period_length" min="0" max="35" value="{{ period_length }}">
+            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" min="0" max="40" value="{{ period_length }}">
           {% else %}
-            <input class="form-input" style="width: 50px;" type="number" placeholder="5" id="period_length" name="period_length" min="0" max="35" value="5">
+            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" min="0" max="40" value="5">
           {% endif %}
           <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a period length if you want to see days of bleeding on the calendar. By default, we will assume an average of 5 days. If you do not wish to view bleeding on the calendar, set to zero and save (will not affect the Oopsie chance).">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="cycle_day_ovulation">Cycle Day of Ovulation: </label>
           {% if cycle_day_ovulation %}
-            <input class="form-input" style="width: 50px;" type="number" placeholder="14" id="cycle_day_ovulation" name="cycle_day_ovulation" min="1" max="35" value="{{ cycle_day_ovulation }}">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" min="1" max="40" value="{{ cycle_day_ovulation }}">
           {% else %}
-            <input class="form-input" style="width: 50px;" type="number" placeholder="14" id="cycle_day_ovulation" name="cycle_day_ovulation" min="1" max="35" value="14">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" min="1" max="40" value="14">
           {% endif %}
           <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter a cycle day of ovulation, we will assume the midpoint of the cycle.">&#9432;</a>
         </div>
       </td>
+    </tr>
+      <tr>
+        <td colspan="2">
+          <br/>
+          <h2>Other Methods</h2>
+      </td>
+    </tr>
+    {% for row in method %}
+      <tr>
+        <td>
+          <div class="form-check">
+            {% if row.id|string in selections %}
+              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
+            {% else %}
+              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
+            {% endif %}
+            <label class="form-check-label" for="{{ row.id }}">
+              {% if (row.chance * 100)|round(5) % 1 == 0 %}
+                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
+              {% else %}
+                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+              {% endif %}
+              </label>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
     <tr>
       <td colspan="2">
         <br/>
-        <h1>Contraception</h1>
+        <h2>Contraception</h2>
       </td>
     </tr>
     {% for row in contraception %}
@@ -120,7 +151,7 @@
     <tr>
       <td colspan="2">
         <br/>
-        <h1>Surgical Procedures</h1>
+        <h2>Surgical Procedures</h2>
       </td>
     </tr>
     {% for row in surgical %}
