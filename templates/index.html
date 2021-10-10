@@ -12,7 +12,15 @@
                     <h1>TODAY</h1>
                     <p style="font-weight:500;">{{ todayf }}</p>
                 {% endif %}
-                <h1>{{ oopsie_chance }}% Oopsie!</h1>
+
+                <h1>
+                    {{ oopsie_chance }}% Oopsie!
+
+                    {% if not methods %}
+                        <a href="javascript:void(0)" data-bs-toggle="tooltip" title="The default Oopsie chance is 40%. This is based on available evidence for couples who don't use any methods but still wish to avoid pregnancy (NCBI).">&#9432;</a>
+                    {% endif %}
+                </h1>
+
                 <a href="#" data-bs-toggle="tooltip" data-bs-html="true" title="
                     {% if methods %}
                             <p>Based on your selected Oopsie methods (preventions):</p>
@@ -36,13 +44,12 @@
                 ">Why this?</a>
                     {% else %}
                         "></a>
-                        <p>(Hey, this is just the default...)</p>
                         <p>&#128161; <a href="{{ url_for('methods') }}">Add a method</a> to personlize your Oopsie chance.</p>
                     {% endif %}
 
                 {% if methods and not cycle_day %}
                     <br/><br/>
-                    <p>&#128161; <a href="{{ url_for('methods') }}">Select Rhythm Method and enter a period start</a> for better results.</p>
+                    <p>&#128161; For better results, <a href="{{ url_for('methods') }}">enter a period start date</a>.</p>
                 {% endif %}
 
 
