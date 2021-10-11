@@ -437,6 +437,7 @@ def calendar():
     if session.get("calendar_date_last_saved") and check_saved_calendar(session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
         print("Quick load!")
         events = session.get("saved_events")
+        cycle_start = session.get("cycle_start_str")
 
     # If different selections or calendar hasn't been saved within 30 days, reload session variables
     else:
@@ -518,7 +519,7 @@ def calendar():
         # Save events in session
         session["saved_events"] = events
 
-    return render_template("calendar.html", events=events)
+    return render_template("calendar.html", cycle_start=cycle_start, events=events)
 
 
 @app.route("/about")
