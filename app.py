@@ -176,13 +176,37 @@ def index():
                 methods = session["methods"] = None
 
             # If date or length error
-            if not check_date(session.get("cycle_start_str")) or period_length > cycle_length or cycle_day_ovulation > cycle_length:
+            if "21" in session.get("selections") and (not session.get("cycle_start_str") or not check_date(session.get("cycle_start_str")) or cycle_length < 1 or period_length < 0 or cycle_day_ovulation < 1 or period_length > cycle_length or cycle_day_ovulation > cycle_length):
+
+                # If date is blank and Rhythm Method was selected, send back to Methods page with an error
+                if "21" in session.get("selections") and not session.get("cycle_start_str"):
+                    rhythm_error = "Last period start date is required for Rhythm Method."
+                else:
+                    rhythm_error = None
 
                 # If date is not a valid date, send back to Methods page with an error
                 if not check_date(session.get("cycle_start_str")):
                     date_error = "Please enter a valid date in format YYYY-MM-DD."
                 else:
                     date_error = None
+
+                # If cycle length is not greater than zero, send back to Methods page with an error
+                if cycle_length < 1:
+                    cycle_length_error = "Cycle length must be greater than zero."
+                else:
+                    cycle_length_error = None
+
+                # If period length is not greater than zero, send back to Methods page with an error
+                if period_length < 0:
+                    period_length_error = "Period length can't a be negative number."
+                else:
+                    period_length_error = None
+
+                # If cycle length is not greater than zero, send back to Methods page with an error
+                if cycle_day_ovulation < 1:
+                    cycle_day_ovulation_error = "Cycle day of ovulation must be greater than zero."
+                else:
+                    cycle_day_ovulation_error = None
 
                  # If period length or cycle day of ovulation are more than the cycle length, send back to Methods page with an error
                 if period_length > cycle_length or cycle_day_ovulation > cycle_length:
@@ -199,7 +223,7 @@ def index():
                 method = Methods.query.filter_by(type="method").order_by(Methods.id).all()
                 surgical = Methods.query.filter_by(type="surgical procedure").order_by(Methods.id).all()
 
-                return render_template("methods.html", contraception=contraception, cycle_awareness=cycle_awareness, method=method, surgical=surgical, selections=session.get("selections"), cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, date_error=date_error, length_error=length_error)
+                return render_template("methods.html", contraception=contraception, cycle_awareness=cycle_awareness, method=method, surgical=surgical, selections=session.get("selections"), cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, rhythm_error=rhythm_error, date_error=date_error, cycle_length_error=cycle_length_error, period_length_error=period_length_error, cycle_day_ovulation_error=cycle_day_ovulation_error, length_error=length_error)
 
     # When user navigates back to homepage without clicking "save" from Methods page...
     else:

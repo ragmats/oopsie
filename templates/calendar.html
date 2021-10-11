@@ -8,7 +8,7 @@
   <h1>Calendar</h1>
 
   {% if not cycle_start %}
-  <p>&#128161; To enable the calendar, select Rhythm Method (Cycle Awareness) and <a href="{{ url_for('methods') }}">enter a period start date</a>.</p>
+  <p>&#128161; To enable the calendar, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
   {% else %}
     <div id="calendar"></div>
 

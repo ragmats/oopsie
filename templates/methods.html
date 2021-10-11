@@ -13,19 +13,47 @@
       <tr>
         <td colspan="2">
           <h3>Cycle Awareness</h3>
-          <p>&#128161; Recommended for better results</p>
-          {% if date_error %}
+          <p>&#128161; Recommended for daily results</p>
+          {% if rhythm_error %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              {{ date_error }}
+              {{ rhythm_error }}
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           {% endif %}
-          {% if length_error %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              {{ length_error }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endif %}
+          {% for row in cycle_awareness %}
+            {% if row.id|string in selections %}
+              {% if date_error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  {{ date_error }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endif %}
+              {% if cycle_length_error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  {{ cycle_length_error }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endif %}
+              {% if period_length_error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  {{ period_length_error }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endif %}
+              {% if cycle_day_ovulation_error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  {{ cycle_day_ovulation_error }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endif %}
+              {% if length_error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  {{ length_error }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
         </td>
       </tr>
     {% for row in cycle_awareness %}
@@ -45,11 +73,7 @@
                   {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
                 {% endif %}
               {% else %}
-                {% if (row.chance * 100)|round(5) % 1 == 0 %}
-                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
-                {% else %}
-                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
-                {% endif %}
+                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }}">&#9432;</a>
               {% endif %}
               </label>
           </div>
@@ -70,27 +94,27 @@
         <div class="form-check">
           <label class="form-label" for="cycle_length">Cycle Length (days): </label>
           {% if cycle_length %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" min="21" max="40" value="{{ cycle_length }}">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="{{ cycle_length }}">
           {% else %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" min="21" max="40" value="28">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="28">
           {% endif %}
           <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume the average of 28 days.">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="period_length">Period Length (days): </label>
           {% if period_length != None %}
-            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" min="0" max="40" value="{{ period_length }}">
+            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="{{ period_length }}">
           {% else %}
-            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" min="0" max="40" value="5">
+            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="5">
           {% endif %}
           <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a period length if you want to see period days on the calendar. By default, we will assume an average of 5 days. If you do not wish to view period days on the calendar, set to zero and save (will not affect the Oopsie chance).">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="cycle_day_ovulation">Cycle Day of Ovulation: </label>
           {% if cycle_day_ovulation %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" min="1" max="40" value="{{ cycle_day_ovulation }}">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="{{ cycle_day_ovulation }}">
           {% else %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" min="1" max="40" value="14">
+            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="14">
           {% endif %}
           <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter a cycle day of ovulation, we will assume the midpoint of the cycle.">&#9432;</a>
         </div>

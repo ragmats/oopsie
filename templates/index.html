@@ -44,12 +44,12 @@
                 ">Why this?</a>
                     {% else %}
                         "></a>
-                        <p>&#128161; <a href="{{ url_for('methods') }}">Add a method</a> to personlize your Oopsie chance.</p>
+                        <p>&#128161; <a href="{{ url_for('methods') }}">Personlize</a> your Oopsie chance.</p>
                     {% endif %}
 
                 {% if methods and not cycle_day %}
                     <br/><br/>
-                    <p>&#128161; For daily results, select Rhythm Method (Cycle Awareness) and <a href="{{ url_for('methods') }}">enter a period start date</a>.</p>
+                    <p>&#128161; For daily results, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
                 {% endif %}
 
 
@@ -102,6 +102,11 @@
                 {% if ovulation_tomorrow %}
                     <p class="inline" style="color:red;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
                 {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <p><a href="{{ url_for('calendar') }}">View more days</a>.</p>
             </td>
         </tr>
         {% endif %}
