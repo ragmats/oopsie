@@ -89,7 +89,7 @@
           {% else %}
             <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start">
           {% endif %}
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't know the last period date, the Rythm Method will default to an Oopsie chance of 24% and be the same each day. For better results, add a period start date.">&#9432;</a>
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Last period start date is required for Rhythm Method.">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="cycle_length">Cycle Length (days): </label>
@@ -98,7 +98,7 @@
           {% else %}
             <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="28">
           {% endif %}
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume the average of 28 days.">&#9432;</a>
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume an average of 28 days.">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="period_length">Period Length (days): </label>
@@ -107,7 +107,7 @@
           {% else %}
             <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="5">
           {% endif %}
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a period length if you want to see period days on the calendar. By default, we will assume an average of 5 days. If you do not wish to view period days on the calendar, set to zero and save (will not affect the Oopsie chance).">&#9432;</a>
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a period length if you want to see period days on the calendar (otherwise set to zero). By default, we will assume an average of 5 days. This will not affect your Oopsie chance.">&#9432;</a>
         </div>
         <div class="form-check">
           <label class="form-label" for="cycle_day_ovulation">Cycle Day of Ovulation: </label>
