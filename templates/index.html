@@ -47,7 +47,7 @@
                         <p>&#128161; <a href="{{ url_for('methods') }}">Personlize</a> your Oopsie chance.</p>
                     {% endif %}
 
-                {% if methods and not cycle_day %}
+                {% if methods and rhythm_chance == None %}
                     <br/><br/>
                     <p>&#128161; For daily results, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
                 {% endif %}

@@ -119,7 +119,7 @@ def index():
             cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
 
             # If there is a cycle start, get cycle day, next ovulation, next period, and rhythm method chance
-            if cycle_start:
+            if cycle_start and "21" in session.get("selections"):
                 cycle_day = session["cycle_day"] = get_cycle_day(today, cycle_start, cycle_length)
                 cycle_day_yesterday = session["cycle_day_yesterday"] = get_cycle_day(yesterday, cycle_start, cycle_length)
                 cycle_day_tomorrow = session["cycle_day_tomorrow"] = get_cycle_day(tomorrow, cycle_start, cycle_length)
@@ -291,7 +291,7 @@ def index():
                 cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
 
                 # If there is a cycle start, get cycle day, next ovulation, next period, and rhythm method chance
-                if cycle_start:
+                if cycle_start and "21" in session.get("selections"):
                     cycle_day = session["cycle_day"] = get_cycle_day(today, cycle_start, cycle_length)
                     cycle_day_yesterday = session["cycle_day_yesterday"] = get_cycle_day(yesterday, cycle_start, cycle_length)
                     cycle_day_tomorrow = session["cycle_day_tomorrow"] = get_cycle_day(tomorrow, cycle_start, cycle_length)
@@ -379,7 +379,7 @@ def methods():
         session["methods_date_last_saved"] = str(today)
 
         # If there is a cycle start, get cycle day and rhythm method chance
-        if cycle_start:
+        if cycle_start and "21" in session.get("selections"):
             cycle_day = get_cycle_day(today, cycle_start, cycle_length)
             rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
         else:
@@ -431,7 +431,7 @@ def get_lucky():
             cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
 
             # If there is a cycle start, get cycle day and rhythm method chance
-            if cycle_start:
+            if cycle_start and "21" in session.get("selections"):
                 cycle_day = get_cycle_day(today, cycle_start, cycle_length)
                 rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
             else:
@@ -461,7 +461,7 @@ def calendar():
     if session.get("calendar_date_last_saved") and check_saved_calendar(session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
         print("Quick load!")
         events = session.get("saved_events")
-        cycle_start = session.get("cycle_start_str")
+        rhythm_chance = session.get("rhythm_chance")
 
     # If different selections or calendar hasn't been saved within 30 days, reload session variables
     else:
@@ -500,7 +500,7 @@ def calendar():
                 cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
 
                 # If there is a cycle start, get cycle day and rhythm method chance
-                if cycle_start:
+                if cycle_start and "21" in session.get("selections"):
                     cycle_day = get_cycle_day(get_date(i), cycle_start, cycle_length)
                     rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
                 else:
@@ -543,7 +543,7 @@ def calendar():
         # Save events in session
         session["saved_events"] = events
 
-    return render_template("calendar.html", cycle_start=cycle_start, events=events)
+    return render_template("calendar.html", rhythm_chance=rhythm_chance, events=events)
 
 
 @app.route("/about")

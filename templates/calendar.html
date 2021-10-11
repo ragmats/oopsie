@@ -6,9 +6,8 @@
 
 {% block main %}
   <h1>Calendar</h1>
-
-  {% if not cycle_start %}
-  <p>&#128161; To enable the calendar, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
+  {% if rhythm_chance == None %}
+    <p>&#128161; To enable the calendar, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
   {% else %}
     <div id="calendar"></div>
 
