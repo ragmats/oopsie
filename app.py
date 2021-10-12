@@ -527,28 +527,28 @@ def calendar():
 
             # Add Oopsie % to calendar for the i'th day
             events.append({
-                "title": str(oopsie_chance) + "% Oopsie!",
+                "title": str(oopsie_chance) + "%",
                 "date": str(get_date(i)),
             })
 
             # Add cycle day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
             if cycle_start and "21" in session.get("selections"):
                 events.append({
-                    "title": "Cycle Day " + str(cycle_day),
+                    "title": "(" + str(cycle_day) + ")",
                     "date": str(get_date(i)) + "T00:00:00",
                 })
 
             # Add period day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
             if cycle_start and "21" in session.get("selections") and (check_period(cycle_day, period_length)):
                 events.append({
-                    "title": "Period Day",
+                    "title": "P",
                     "date": str(get_date(i)) + "T00:00:00",
                 })
 
             # Add ovulation day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
             if cycle_start and "21" in session.get("selections") and (check_ovulation(cycle_day, cycle_day_ovulation)):
                 events.append({
-                    "title": "Ovulation Day",
+                    "title": "O",
                     "date": str(get_date(i)) + "T00:00:00",
                 })
 
