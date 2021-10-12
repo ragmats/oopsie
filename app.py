@@ -480,15 +480,15 @@ def calendar():
         print("New load!")
         session["calendar_date_last_saved"] = str(today)
 
-        # If selections are remembered in the session, reload saved session variables
-        if session.get("selections"):
-            session["calendar_selections_saved"] = session.get("selections")
-            session["calendar_cycle_start_str_saved"] = session.get("cycle_start_str")
-            session["calendar_cycle_length_saved"] = session.get("cycle_length")
-            session["calendar_period_length_saved"] = session.get("period_length")
-            session["calendar_cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
-        else:
-            session["calendar_selections_saved"] = []
+        # # If selections are remembered in the session, reload saved session variables
+        # if session.get("selections"):
+        #     session["calendar_selections_saved"] = session.get("selections")
+        #     session["calendar_cycle_start_str_saved"] = session.get("cycle_start_str")
+        #     session["calendar_cycle_length_saved"] = session.get("cycle_length")
+        #     session["calendar_period_length_saved"] = session.get("period_length")
+        #     session["calendar_cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
+        # else:
+        #     session["calendar_selections_saved"] = []
 
         # Create empty events object for calendar
         events = []
@@ -514,7 +514,7 @@ def calendar():
                 # If there is a cycle start, get cycle day and rhythm method chance
                 if cycle_start and "21" in session.get("selections"):
                     cycle_day = get_cycle_day(get_date(i), cycle_start, cycle_length)
-                    rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
+                    rhythm_chance = get_rhythm_chance(cycle_day, cycle_day_ovulation)
                 else:
                     cycle_day = None
                     rhythm_chance = None
@@ -600,19 +600,19 @@ def check_saved_data(date_last_saved, selections, cycle_start_str, cycle_length,
     else:
         return False
 
+# TODO Possibly delete if not used
+# def check_saved_calendar(selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
+#     """Returns True if new selections match saved selections and the calendar has been reloaded in the last 30 days"""
 
-def check_saved_calendar(selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
-    """Returns True if new selections match saved selections and the calendar has been reloaded in the last 30 days"""
-
-    if ((datetime.strptime(session.get("calendar_date_last_saved"), "%Y-%m-%d").date() + timedelta(days=30)) - today).days > 0:
-        if (selections == session.get("calendar_selections_saved") and
-            cycle_start_str == session.get("calendar_cycle_start_str_saved") and
-            cycle_length == session.get("calendar_cycle_length_saved") and
-            period_length == session.get("calendar_period_length_saved") and
-            cycle_day_ovulation == session.get("calendar_cycle_day_ovulation_saved")):
-            return True
-    else:
-        return False
+#     if ((datetime.strptime(session.get("calendar_date_last_saved"), "%Y-%m-%d").date() + timedelta(days=30)) - today).days > 0:
+#         if (selections == session.get("calendar_selections_saved") and
+#             cycle_start_str == session.get("calendar_cycle_start_str_saved") and
+#             cycle_length == session.get("calendar_cycle_length_saved") and
+#             period_length == session.get("calendar_period_length_saved") and
+#             cycle_day_ovulation == session.get("calendar_cycle_day_ovulation_saved")):
+#             return True
+#     else:
+#         return False
 
 
 def get_date(relative_days):
