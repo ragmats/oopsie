@@ -42,6 +42,35 @@
                                 {% endfor %}
                             </ul>
                 ">Why this?</a>
+
+                        {% if cycle_day and methods %}
+                            | <a href="#" data-bs-toggle="tooltip" data-bs-html="true" title="
+                                <ul>
+                                    {% if cycle_day %}
+                                        <li>Current Cycle Day: {{ cycle_day }}</li>
+                                    {% endif %}
+                                    {% if next_ovulation %}
+                                        <li>Next Ovulation: {{ next_ovulation }} (cycle day {{ cycle_day_ovulation }})</li>
+                                    {% endif %}
+                                    {% if next_period %}
+                                        <li>Next Period Start: {{ next_period }}</li>
+                                    {% endif %}
+                                </ul>
+                            ">Cycle</a>
+                            {% if period_today %}
+                                <p class="inline" style="color:red;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+                            {% endif %}
+                            {% if ovulation_today %}
+                                <p class="inline" style="color:red;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if rhythm_chance == 0 %}
+                            | <a href="#" data-bs-toggle="tooltip" title="Yes. Based on your Rhythm Method settings, today is outside the fertile window. We recommend that you double check your Rhythm Method settings and/or review how we approach the fertile window in the Disclaimer section.">Is it really zero?</a>
+                        {% elif oopsie_chance == 0 %}
+                            | <a href="#" data-bs-toggle="tooltip" title="Your Oopsie chance, less than .00001% (1 out of 10 million), has been rounded to zero.">Is it really zero?</a>
+                        {% endif %}
+
                     {% else %}
                         "></a>
                         <p>&#128161; <a href="{{ url_for('methods') }}">Personlize</a> your Oopsie chance.</p>
@@ -51,36 +80,12 @@
                     <br/><br/>
                     <p>&#128161; For daily results, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
                 {% endif %}
-
-
-                {% if cycle_day and methods %}
-                    | <a href="#" data-bs-toggle="tooltip" data-bs-html="true" title="
-                        <ul>
-                            {% if cycle_day %}
-                                <li>Current Cycle Day: {{ cycle_day }}</li>
-                            {% endif %}
-                            {% if next_ovulation %}
-                                <li>Next Ovulation: {{ next_ovulation }} (cycle day {{ cycle_day_ovulation }})</li>
-                            {% endif %}
-                            {% if next_period %}
-                                <li>Next Period Start: {{ next_period }}</li>
-                            {% endif %}
-                        </ul>
-                    ">Cycle</a>
-                    {% if period_today %}
-                        <p class="inline" style="color:red;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
-                    {% endif %}
-                    {% if ovulation_today %}
-                        <p class="inline" style="color:red;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
-                    {% endif %}
-                <br/><br/>
-                {% endif %}
             </td>
         </tr>
         {% if rhythm_chance != None %}
         <tr>
-            <td style="padding-right: 20px">
-                <p style="font-weight:500;">YESTERDAY</p>
+            <td style="padding-top: 30px; padding-right: 20px">
+                <p style="font-weight:500">YESTERDAY</p>
                 <p>{{ yesterdayf }}</p>
                 <h3>{{ oopsie_chance_yesterday }}%</h3>
                 <p class="inline"><a href="#" data-bs-toggle="tooltip" title="cycle day">({{ cycle_day_yesterday }})</a></p>
@@ -91,7 +96,7 @@
                     <p class="inline" style="color:red;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
                 {% endif %}
             </td>
-            <td>
+            <td style="padding-top: 30px">
                 <p style="font-weight:500;">TOMORROW</p>
                 <p>{{ tomorrowf }}</p>
                 <h3>{{ oopsie_chance_tomorrow }}%</h3>

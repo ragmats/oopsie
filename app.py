@@ -30,7 +30,7 @@ app.secret_key = "NDQc#@5~cgKT)mv2qG<c(B@!"
 # Configure Flask session cookies
 app.config["SESSION_PERMANENT"] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=10000)
-app.config['SESSION_COOKIE_NAME'] = "my_session"
+# app.config['SESSION_COOKIE_NAME'] = "my_session"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///oopsie.db"
 
@@ -59,8 +59,11 @@ yesterdayf = yesterday.strftime("%m/%d/%Y")
 
 # Learned from:
     # https://stackoverflow.com/questions/34118093/flask-permanent-session-where-to-define-them
+
+
 @app.before_request
 def make_session_permanent():
+    """Makes session permanent before each request"""
     session.permanent = True
 
 @app.route("/", methods=["GET", "POST"])
@@ -457,11 +460,19 @@ def calendar():
     # Learned Fullcalendar setup from:
         # https://www.youtube.com/watch?v=VXW2A4Q81Ok&t=2s&ab_channel=GordonChan
 
-    # If selections are unchanged from previous save within 30 days, quick load events from session
-    if session.get("calendar_date_last_saved") and check_saved_calendar(session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
-        print("Quick load!")
-        events = session.get("saved_events")
-        rhythm_chance = session.get("rhythm_chance")
+    # Quick load for calendar has been disabled because it exceeds the cookie file size. To re-enabled, un-comment the first if statement, comment/remove the second, and un-comment "session["saved_events"] = events" at end of function
+
+    # # If selections are unchanged from previous save within 30 days, quick load events from session
+    # if session.get("calendar_date_last_saved") and check_saved_calendar(session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
+    #     print("Quick load!")
+    #     events = session.get("saved_events")
+    #     rhythm_chance = session.get("rhythm_chance")
+
+    # Quick load without using Session
+    if session.get("rhythm_chance") == None:
+        print("Quick load! (No Rhythm Chance)")
+        events = None
+        rhythm_chance = None
 
     # If different selections or calendar hasn't been saved within 30 days, reload session variables
     else:
@@ -483,12 +494,13 @@ def calendar():
         events = []
 
         # Populate calendar events for X days past and future
-        for i in range(-90, 90):
+        for i in range(-365, 365):
 
             # If no selections are remembered in the session, or first-time visit, set oopsie chance to default (40%)
             if not session.get("selections"):
                 oopsie_chance = 40
                 cycle_start = None
+                rhythm_chance = None
 
             # If selections are remembered in the session, calculate oopsie chance
             else:
@@ -541,7 +553,7 @@ def calendar():
                 })
 
         # Save events in session
-        session["saved_events"] = events
+        # session["saved_events"] = events
 
     return render_template("calendar.html", rhythm_chance=rhythm_chance, events=events)
 
