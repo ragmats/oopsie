@@ -864,14 +864,11 @@ def get_oopsie(chances):
 def get_Sunday(date):
     """Returns the most recent Sunday, as a date object, given a date object"""
 
-    # If the date is Sunday, return date
-    if str(date.strftime("%A")) == "Sunday":
-        return date
+    # If the date isn't Sunday (week day 6), find date of most recent Sunday
+    if date.weekday() != 6:
+        date -= timedelta(days=date.weekday() + 1)
 
-    # If the date is not Sunday, subtract a day and recursively check if that day is Sunday
-    else:
-        date -= timedelta(days=1)
-        return get_Sunday(date)
+    return date
 
 
 def get_week(start_date):
