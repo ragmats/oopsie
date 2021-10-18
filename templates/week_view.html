@@ -1,0 +1,357 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Week View
+{% endblock %}
+
+{% block main %}
+  {% if rhythm_chance == None %}
+    <h1>Week View</h1>
+    <p>&#128161; To enable week-view, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
+  {% else %}
+
+    <h1>Week View ({{ current_month }} {{ current_year }})</h1>
+
+    <div class="week_container">
+
+      <h5>Current Week:</h5>
+
+      {% for day in current_week %}
+
+        <div class="day_box">
+          {% if current_week[day]["month_day"] == current_day %}
+            <div class="day_circle_on">
+          {% else %}
+            <div class="day_circle_off">
+          {% endif %}
+
+              <div class="day_letter_box">
+                <h3 style="margin: 0px;">{{ current_week[day]["day_letter"] }}</h3>
+              </div>
+
+              <p style="margin: 0px;">{{ current_week[day]["month_day"] }}</p>
+
+            </div>
+        </div>
+
+        <div class="day_info_box">
+
+          <div class="day_oopsie_box">
+            <p style="margin-bottom: 0px; margin-left: 10px;">{{ current_week[day]["oopsie_chance"] }}%</p>
+          </div>
+
+            <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">({{ current_week[day]["cycle_day"] }})</a></p>
+            {% if current_week[day]["period"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+            {% endif %}
+            {% if current_week[day]["ovulation"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+            {% endif %}
+
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+    <div class="week_container">
+
+      <h5>Next Week:</h5>
+
+      {% for day in next_week %}
+
+        <div class="day_box">
+          {% if next_week[day]["month_day"] == current_day %}
+            <div class="day_circle_on">
+          {% else %}
+            <div class="day_circle_off">
+          {% endif %}
+
+              <div class="day_letter_box">
+                <h3 style="margin: 0px;">{{ next_week[day]["day_letter"] }}</h3>
+              </div>
+
+              <p style="margin: 0px;">{{ next_week[day]["month_day"] }}</p>
+
+            </div>
+        </div>
+
+        <div class="day_info_box">
+
+          <div class="day_oopsie_box">
+            <p style="margin-bottom: 0px; margin-left: 10px;">{{ next_week[day]["oopsie_chance"] }}%</p>
+          </div>
+
+            <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">({{ next_week[day]["cycle_day"] }})</a></p>
+            {% if next_week[day]["period"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+            {% endif %}
+            {% if next_week[day]["ovulation"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+            {% endif %}
+
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+    <div class="week_container">
+
+      <h5>Last Week:</h5>
+
+      {% for day in last_week %}
+
+        <div class="day_box">
+          {% if last_week[day]["month_day"] == current_day %}
+            <div class="day_circle_on">
+          {% else %}
+            <div class="day_circle_off">
+          {% endif %}
+
+              <div class="day_letter_box">
+                <h3 style="margin: 0px;">{{ last_week[day]["day_letter"] }}</h3>
+              </div>
+
+              <p style="margin: 0px;">{{ last_week[day]["month_day"] }}</p>
+
+            </div>
+        </div>
+
+        <div class="day_info_box">
+
+          <div class="day_oopsie_box">
+            <p style="margin-bottom: 0px; margin-left: 10px;">{{ last_week[day]["oopsie_chance"] }}%</p>
+          </div>
+
+            <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">({{ last_week[day]["cycle_day"] }})</a></p>
+            {% if last_week[day]["period"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+            {% endif %}
+            {% if last_week[day]["ovulation"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+            {% endif %}
+
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+  {% endif %}
+
+
+
+
+
+
+
+  <!-- <div style="float: left; margin-right: 30px; margin-bottom: 30px; height: 200px; width: 184px; border: 0px solid yellow";>
+
+    <h5>Current Week</h5>
+
+    <div style="margin: 1px; float: left; height: 80px; width: 80px; border: 0px solid red; background-color: rgb(41, 41, 41); display: flex; align-items:center; justify-content: center;">
+    <div style="height: 70px; width: 70px; border: 0px solid red; background-color: #0a5669; border-radius: 50%; text-align: center;">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+        <h3 style="margin: 0px;">S</h3>
+      </div>
+
+      <p style="margin: 0px;">##</p>
+
+    </div>
+  </div>
+
+    <div style="margin: 1px; float: left; height: 80px; width: 100px; border: 0px solid red; background-color: rgb(41, 41, 41);">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+        <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+      </div>
+
+        <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+      </div>
+
+      <div style="margin: 1px; float: left; height: 80px; width: 80px; border: 0px solid red; background-color: rgb(41, 41, 41); text-align: center;">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+          <h3 style="margin: 0px;">S</h3>
+        </div>
+
+        <p style="margin: 0px;">##</p>
+
+      </div>
+
+      <div style="margin: 1px; float: left; height: 80px; width: 100px; border: 0px solid red; background-color: rgb(41, 41, 41);">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+          <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+        </div>
+
+          <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+        </div>
+
+  </div>
+
+
+
+
+
+
+
+  <div style="float: left; margin-right: 30px; margin-bottom: 30px; height: 200px; width: 184px; border: 1px solid yellow";>
+
+    <h5>Current Week</h5>
+
+    <div style="float: left; height: 80px; width: 80px; border: 1px solid red; background-color: rgb(41, 41, 41); border-radius: 50%; text-align: center;">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+        <h3 style="margin: 0px;">S</h3>
+      </div>
+
+      <p style="margin: 0px;">##</p>
+
+    </div>
+
+    <div style="margin-left: 2px; float: left; height: 80px; width: 100px; border: 1px solid red; background-color: rgb(41, 41, 41);">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+        <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+      </div>
+
+        <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+      </div>
+
+      <div style="float: left; height: 80px; width: 80px; border: 1px solid red; background-color: rgb(41, 41, 41); text-align: center;">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+          <h3 style="margin: 0px;">S</h3>
+        </div>
+
+        <p style="margin: 0px;">##</p>
+
+      </div>
+
+      <div style="margin-left: 2px; float: left; height: 80px; width: 100px; border: 1px solid red; background-color: rgb(41, 41, 41);">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+          <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+        </div>
+
+          <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+        </div>
+
+  </div>
+
+  <div style="float: left; margin-right: 30px; margin-bottom: 30px; height: 200px; width: 184px; border: 1px solid yellow";>
+
+    <h5>Next Week</h5>
+
+    <div style="float: left; height: 80px; width: 80px; border: 1px solid red; background-color: rgb(41, 41, 41); text-align: center;">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+        <h3 style="margin: 0px;">S</h3>
+      </div>
+
+      <p style="margin: 0px;">##</p>
+
+    </div>
+
+    <div style="margin-left: 2px; float: left; height: 80px; width: 100px; border: 1px solid red; background-color: rgb(41, 41, 41);">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+        <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+      </div>
+
+        <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+      </div>
+
+      <div style="float: left; height: 80px; width: 80px; border: 1px solid red; background-color: rgb(41, 41, 41); text-align: center;">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+          <h3 style="margin: 0px;">S</h3>
+        </div>
+
+        <p style="margin: 0px;">##</p>
+
+      </div>
+
+      <div style="margin-left: 2px; float: left; height: 80px; width: 100px; border: 1px solid red; background-color: rgb(41, 41, 41);">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+          <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+        </div>
+
+          <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+        </div>
+
+  </div>
+
+  <div style="float: left; height: 200px; width: 184px; border: 1px solid yellow";>
+
+    <h5>Last Week</h5>
+
+    <div style="float: left; height: 80px; width: 80px; border: 1px solid red; background-color: rgb(41, 41, 41); text-align: center;">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+        <h3 style="margin: 0px;">S</h3>
+      </div>
+
+      <p style="margin: 0px;">##</p>
+
+    </div>
+
+    <div style="margin-left: 2px; float: left; height: 80px; width: 100px; border: 1px solid red; background-color: rgb(41, 41, 41);">
+
+      <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+        <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+      </div>
+
+        <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+        <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+      </div>
+
+      <div style="float: left; height: 80px; width: 80px; border: 1px solid red; background-color: rgb(41, 41, 41); text-align: center;">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end; justify-content: center;">
+          <h3 style="margin: 0px;">S</h3>
+        </div>
+
+        <p style="margin: 0px;">##</p>
+
+      </div>
+
+      <div style="margin-left: 2px; float: left; height: 80px; width: 100px; border: 1px solid red; background-color: rgb(41, 41, 41);">
+
+        <div style="height: 40px; border: 0px solid red; display: flex; align-items:flex-end;">
+          <p style="margin-bottom: 0px; margin-left: 10px;">#.#####%</p>
+        </div>
+
+          <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="#" data-bs-toggle="tooltip" title="cycle day">(##)</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+          <p class="inline" style="color:red; margin: 0px;"><a href="#" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+
+        </div>
+
+  </div> -->
+
+{% endblock %}

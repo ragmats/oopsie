@@ -397,6 +397,7 @@ def clear():
     """Clears data saved in the session"""
 
     session["selections"] = session["calendar_selections_saved"] = session["saved_events"] = []
+    session["rhythm_chance"] = None
     session["cycle_start_str"] = session["cycle_start_str_saved"] = session["calendar_cycle_start_str_saved"] = None
     session["cycle_length"] = session["cycle_length_saved"] = session["calendar_cycle_length_saved"] = 28
     session["period_length"] = session["period_length_saved"] = session["calendar_period_length_saved"] = 5
@@ -406,8 +407,8 @@ def clear():
     return redirect("/methods")
 
 
-@app.route("/get_lucky")
-def get_lucky():
+@app.route("/getlucky")
+def getlucky():
     """Returns "Get Lucky" page, where the user simulates business time (intercourse) with today's Oopsie chance"""
 
     # If no selections are remembered in the session, or first-time visit, set oopsie chance to default (40%)
@@ -450,6 +451,21 @@ def get_lucky():
     return render_template("get_lucky.html", oopsie_chance=oopsie_chance)
 
 
+@app.route("/weekview")
+def weekview():
+    """Returns week view page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the current, next, and last week."""
+
+    # Get the most recent Sunday as a starting point for the current week
+    Sunday = get_Sunday(date.today())
+
+    # Get week-view infor for current week, last week, and next week.
+    current_week = get_week(Sunday)
+    last_week = get_week(Sunday - timedelta(days=7))
+    next_week = get_week(Sunday + timedelta(days=7))
+
+    return render_template("week_view.html", rhythm_chance=session.get("rhythm_chance"), current_week=current_week, last_week=last_week, next_week=next_week, current_day=today.day, current_month=date.today().strftime("%B"), current_year=today.year)
+
+
 @app.route("/calendar")
 def calendar():
     """Returns calendar page, where the user views a calendar of Oopsie chances, cycle days, ovulation days, period days, etc."""
@@ -462,17 +478,17 @@ def calendar():
 
     # Quick load for calendar has been disabled because it exceeds the cookie file size. To re-enabled, un-comment the first if statement, comment/remove the second, and un-comment "session["saved_events"] = events" at end of function
 
-    # # If selections are unchanged from previous save within 30 days, quick load events from session
-    # if session.get("calendar_date_last_saved") and check_saved_calendar(session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
-    #     print("Quick load!")
-    #     events = session.get("saved_events")
-    #     rhythm_chance = session.get("rhythm_chance")
+    # If selections are unchanged from previous save within 30 days, quick load events from session
+    if session.get("calendar_date_last_saved") and check_saved_calendar(session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
+        print("Quick load!")
+        events = session.get("saved_events")
+        rhythm_chance = session.get("rhythm_chance")
 
-    # Quick load without using Session
-    if session.get("rhythm_chance") == None:
-        print("Quick load! (No Rhythm Chance)")
-        events = None
-        rhythm_chance = None
+    # # Quick load without using Session
+    # if session.get("rhythm_chance") == None:
+    #     print("Quick load! (No Rhythm Chance)")
+    #     events = None
+    #     rhythm_chance = None
 
     # If different selections or calendar hasn't been saved within 30 days, reload session variables
     else:
@@ -480,21 +496,21 @@ def calendar():
         print("New load!")
         session["calendar_date_last_saved"] = str(today)
 
-        # # If selections are remembered in the session, reload saved session variables
-        # if session.get("selections"):
-        #     session["calendar_selections_saved"] = session.get("selections")
-        #     session["calendar_cycle_start_str_saved"] = session.get("cycle_start_str")
-        #     session["calendar_cycle_length_saved"] = session.get("cycle_length")
-        #     session["calendar_period_length_saved"] = session.get("period_length")
-        #     session["calendar_cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
-        # else:
-        #     session["calendar_selections_saved"] = []
+        # If selections are remembered in the session, reload saved session variables
+        if session.get("selections"):
+            session["calendar_selections_saved"] = session.get("selections")
+            session["calendar_cycle_start_str_saved"] = session.get("cycle_start_str")
+            session["calendar_cycle_length_saved"] = session.get("cycle_length")
+            session["calendar_period_length_saved"] = session.get("period_length")
+            session["calendar_cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
+        else:
+            session["calendar_selections_saved"] = []
 
         # Create empty events object for calendar
         events = []
 
         # Populate calendar events for X days past and future
-        for i in range(-365, 365):
+        for i in range(-7, 21):
 
             # If no selections are remembered in the session, or first-time visit, set oopsie chance to default (40%)
             if not session.get("selections"):
@@ -553,7 +569,7 @@ def calendar():
                 })
 
         # Save events in session
-        # session["saved_events"] = events
+        session["saved_events"] = events
 
     return render_template("calendar.html", rhythm_chance=rhythm_chance, events=events)
 
@@ -600,19 +616,19 @@ def check_saved_data(date_last_saved, selections, cycle_start_str, cycle_length,
     else:
         return False
 
-# TODO Possibly delete if not used
-# def check_saved_calendar(selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
-#     """Returns True if new selections match saved selections and the calendar has been reloaded in the last 30 days"""
 
-#     if ((datetime.strptime(session.get("calendar_date_last_saved"), "%Y-%m-%d").date() + timedelta(days=30)) - today).days > 0:
-#         if (selections == session.get("calendar_selections_saved") and
-#             cycle_start_str == session.get("calendar_cycle_start_str_saved") and
-#             cycle_length == session.get("calendar_cycle_length_saved") and
-#             period_length == session.get("calendar_period_length_saved") and
-#             cycle_day_ovulation == session.get("calendar_cycle_day_ovulation_saved")):
-#             return True
-#     else:
-#         return False
+def check_saved_calendar(selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
+    """Returns True if new selections match saved selections and the calendar has been reloaded in the last 30 days"""
+
+    if ((datetime.strptime(session.get("calendar_date_last_saved"), "%Y-%m-%d").date() + timedelta(days=30)) - today).days > 0:
+        if (selections == session.get("calendar_selections_saved") and
+            cycle_start_str == session.get("calendar_cycle_start_str_saved") and
+            cycle_length == session.get("calendar_cycle_length_saved") and
+            period_length == session.get("calendar_period_length_saved") and
+            cycle_day_ovulation == session.get("calendar_cycle_day_ovulation_saved")):
+            return True
+    else:
+        return False
 
 
 def get_date(relative_days):
@@ -843,6 +859,54 @@ def get_oopsie(chances):
         oopsie_chance = int(oopsie_chance)
 
     return round(oopsie_chance, 5)
+
+
+def get_Sunday(date):
+    """Returns the most recent Sunday, as a date object, given a date object"""
+
+    # If the date is Sunday, return date
+    if str(date.strftime("%A")) == "Sunday":
+        return date
+
+    # If the date is not Sunday, subtract a day and recursively check if that day is Sunday
+    else:
+        date -= timedelta(days=1)
+        return get_Sunday(date)
+
+
+def get_week(start_date):
+    """Returns a dictionary for a week with week-view data given a starting date"""
+
+    # Create empty week dictionary
+    week = {}
+
+    # Iterate through each day of week dictionary for 7 days
+    for i in range(7):
+
+        # Get correct cycle start, cycle length, period length, ovulation cycle day, cycle day, and rhythm chance
+        cycle_start = get_cycle_start(session.get("cycle_start_str"))
+        cycle_length = get_cycle_length(session.get("cycle_length"))
+        period_length = get_period_length(session.get("period_length"))
+        cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
+        cycle_day = get_cycle_day(start_date + timedelta(days=i), cycle_start, cycle_length)
+        rhythm_chance = get_rhythm_chance(cycle_day, cycle_day_ovulation)
+
+        # Get list of oopsie chances based on user-selected method IDs
+        session["chances"] = get_chances(session.get("selections"), rhythm_chance)
+
+        # Calculate oopsie chance by multiplying chances values
+        oopsie_chance = get_oopsie(session.get("chances"))
+
+        week[i + 1] = {
+            "day_letter": str((start_date + timedelta(days=i)).strftime("%A"))[0],
+            "month_day": (start_date + timedelta(days=i)).day,
+            "oopsie_chance": oopsie_chance,
+            "cycle_day": cycle_day,
+            "period": check_period(cycle_day, period_length),
+            "ovulation": check_ovulation(cycle_day, cycle_day_ovulation)
+        }
+
+    return week
 
 
 def make_serializable(object):

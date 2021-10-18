@@ -41,6 +41,61 @@ a.svg {
     text-align: left;
 }
 
+.week_container {
+    float: left;
+    margin-right: 30px;
+    margin-bottom: 30px;
+    width: 174px;
+}
+
+.day_box {
+    margin: 1px;
+    float: left;
+    height: 80px;
+    width: 80px;
+    background-color: rgb(41, 41, 41);
+    display: flex;
+    align-items:center;
+    justify-content: center;
+}
+
+.day_circle_on {
+    height: 70px;
+    width: 70px;
+    background-color: #0a5669;
+    border-radius: 50%;
+    text-align: center;
+}
+
+.day_circle_off {
+    height: 70px;
+    width: 70px;
+    background-color: rgb(41, 41, 41);
+    border-radius: 50%;
+    text-align: center;
+}
+
+.day_letter_box {
+    height: 40px;
+    display: flex;
+    align-items:flex-end;
+    justify-content: center;
+}
+
+.day_info_box {
+    margin: 1px;
+    float: left;
+    height: 80px;
+    width: 90px;
+    background-color: rgb(41, 41, 41);
+}
+
+.day_oopsie_box {
+    height: 40px;
+    display: flex;
+    align-items:flex-end;
+}
+
 body {
     background: #303135;
     color: #bdc0c5;
