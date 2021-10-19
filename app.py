@@ -51,11 +51,12 @@ class Methods(db.Model):
 
 # Global date variables
 today = date.today()
-tomorrow = date.today() + timedelta(days=1)
-yesterday = date.today() - timedelta(days=1)
-todayf = date.today().strftime("%A, %B %d, %Y")
+tomorrow = today + timedelta(days=1)
+yesterday = today - timedelta(days=1)
+todayf = today.strftime("%A, %B %d, %Y")
 tomorrowf = tomorrow.strftime("%m/%d/%Y")
 yesterdayf = yesterday.strftime("%m/%d/%Y")
+default_oopsie = 3.44643
 
 # Learned from:
     # https://stackoverflow.com/questions/34118093/flask-permanent-session-where-to-define-them
@@ -68,7 +69,6 @@ def make_session_permanent():
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    print(datetime.today())
     """Returns index, the homepage with an Oopsie chance summary based on selected options"""
 
     # When user clicks "Save" from Methods page...
@@ -84,7 +84,7 @@ def index():
         session["cycle_day_ovulation"] = request.form.get("cycle_day_ovulation")
 
         # If selections, Rhythm Method data, and day are unchanged from previous save, quick load variables from session
-        if session.get("selections_date_last_saved") and check_saved_data(session.get("selections_date_last_saved"), session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
+        if session.get("selections_date_last_saved") and check_saved_data(session.get("selections_date_last_saved"), session.get("selections_saved"), session.get("cycle_start_str_saved"), session.get("cycle_length_saved"), session.get("period_length_saved"), session.get("cycle_day_ovulation_saved")):
             print("Quick load!")
             oopsie_chance = session.get("oopsie_chance")
             oopsie_chance_yesterday = session.get("oopsie_chance_yesterday")
@@ -172,10 +172,10 @@ def index():
                 oopsie_chance_yesterday = session["oopsie_chance_yesterday"] = get_oopsie(session.get("chances_yesterday"))
                 oopsie_chance_tomorrow = session["oopsie_chance_tomorrow"] = get_oopsie(session.get("chances_tomorrow"))
 
-            # If no methods were selected on Methods page, set oopsie chance to default (40%)
+            # If no methods were selected on Methods page, set oopsie chance to default
             else:
-                oopsie_chance = oopsie_chance_yesterday = oopsie_chance_tomorrow = 40
-                session["oopsie_chance"] = session["oopsie_chance_yesterday"] = session["oopsie_chance_tomorrow"] = 40
+                oopsie_chance = oopsie_chance_yesterday = oopsie_chance_tomorrow = default_oopsie
+                session["oopsie_chance"] = session["oopsie_chance_yesterday"] = session["oopsie_chance_tomorrow"] = default_oopsie
                 methods = session["methods"] = None
 
             # If date or length error
@@ -231,10 +231,10 @@ def index():
     # When user navigates back to homepage without clicking "save" from Methods page...
     else:
 
-        # If no selections are remembered in the session, or first-time visit, set oopsie chance to default (40%)
+        # If no selections are remembered in the session, or first-time visit, set oopsie chance to default
         if not session.get("selections"):
-            oopsie_chance = oopsie_chance_yesterday = oopsie_chance_tomorrow = 40
-            session["oopsie_chance"] = session["oopsie_chance_yesterday"] = session["oopsie_chance_tomorrow"] = 40
+            oopsie_chance = oopsie_chance_yesterday = oopsie_chance_tomorrow = default_oopsie
+            session["oopsie_chance"] = session["oopsie_chance_yesterday"] = session["oopsie_chance_tomorrow"] = default_oopsie
             methods = session["methods"] = None
             cycle_day = session["cycle_day"] = None
             cycle_day_yesterday = session["cycle_day_yesterday"] = None
@@ -396,13 +396,7 @@ def methods():
 def clear():
     """Clears data saved in the session"""
 
-    session["selections"] = session["calendar_selections_saved"] = session["saved_events"] = []
-    session["rhythm_chance"] = None
-    session["cycle_start_str"] = session["cycle_start_str_saved"] = session["calendar_cycle_start_str_saved"] = None
-    session["cycle_length"] = session["cycle_length_saved"] = session["calendar_cycle_length_saved"] = 28
-    session["period_length"] = session["period_length_saved"] = session["calendar_period_length_saved"] = 5
-    session["cycle_day_ovulation"] = session["cycle_day_ovulation_saved"] = session["calendar_cycle_day_ovulation_saved"] = 14
-    session["selections_date_last_saved"] = session["lucky_date_last_saved"] = session["calendar_date_last_saved"] = str(today)
+    session.clear()
 
     return redirect("/methods")
 
@@ -411,9 +405,9 @@ def clear():
 def getlucky():
     """Returns "Get Lucky" page, where the user simulates business time (intercourse) with today's Oopsie chance"""
 
-    # If no selections are remembered in the session, or first-time visit, set oopsie chance to default (40%)
+    # If no selections are remembered in the session, or first-time visit, set oopsie chance to default
     if not session.get("selections"):
-        oopsie_chance = 40
+        oopsie_chance = default_oopsie
 
     # If selections are remembered in the session, load oopsie chance
     else:
@@ -453,125 +447,24 @@ def getlucky():
 
 @app.route("/weekview")
 def weekview():
-    """Returns week view page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the current, next, and last week."""
+    """Returns week view page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous, current, and next weeks."""
 
-    # Get the most recent Sunday as a starting point for the current week
-    Sunday = get_Sunday(date.today())
+    # If no selections are remembered in the session, or first-time visit, disable week view
+    if not session.get("selections"):
+        current_week = last_week = next_week = None
 
-    # Get week-view infor for current week, last week, and next week.
-    current_week = get_week(Sunday)
-    last_week = get_week(Sunday - timedelta(days=7))
-    next_week = get_week(Sunday + timedelta(days=7))
-
-    return render_template("week_view.html", rhythm_chance=session.get("rhythm_chance"), current_week=current_week, last_week=last_week, next_week=next_week, current_day=today.day, current_month=date.today().strftime("%B"), current_year=today.year)
-
-
-@app.route("/calendar")
-def calendar():
-    """Returns calendar page, where the user views a calendar of Oopsie chances, cycle days, ovulation days, period days, etc."""
-
-    # Calendar by:
-    #     https://fullcalendar.io/
-
-    # Learned Fullcalendar setup from:
-        # https://www.youtube.com/watch?v=VXW2A4Q81Ok&t=2s&ab_channel=GordonChan
-
-    # Quick load for calendar has been disabled because it exceeds the cookie file size. To re-enabled, un-comment the first if statement, comment/remove the second, and un-comment "session["saved_events"] = events" at end of function
-
-    # If selections are unchanged from previous save within 30 days, quick load events from session
-    if session.get("calendar_date_last_saved") and check_saved_calendar(session.get("selections"), session.get("cycle_start_str"), session.get("cycle_length"), session.get("period_length"), session.get("cycle_day_ovulation")):
-        print("Quick load!")
-        events = session.get("saved_events")
-        rhythm_chance = session.get("rhythm_chance")
-
-    # # Quick load without using Session
-    # if session.get("rhythm_chance") == None:
-    #     print("Quick load! (No Rhythm Chance)")
-    #     events = None
-    #     rhythm_chance = None
-
-    # If different selections or calendar hasn't been saved within 30 days, reload session variables
+    # If selections are remembered in the session, load oopsie chance
     else:
-        # Set last save to today
-        print("New load!")
-        session["calendar_date_last_saved"] = str(today)
 
-        # If selections are remembered in the session, reload saved session variables
-        if session.get("selections"):
-            session["calendar_selections_saved"] = session.get("selections")
-            session["calendar_cycle_start_str_saved"] = session.get("cycle_start_str")
-            session["calendar_cycle_length_saved"] = session.get("cycle_length")
-            session["calendar_period_length_saved"] = session.get("period_length")
-            session["calendar_cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
-        else:
-            session["calendar_selections_saved"] = []
+        # Get the most recent Sunday as a starting point for the current week
+        Sunday = get_Sunday(today)
 
-        # Create empty events object for calendar
-        events = []
+        # Get week-view info for current week, last week, and next week
+        current_week = get_week(Sunday)
+        last_week = get_week(Sunday - timedelta(days=7))
+        next_week = get_week(Sunday + timedelta(days=7))
 
-        # Populate calendar events for X days past and future
-        for i in range(-7, 21):
-
-            # If no selections are remembered in the session, or first-time visit, set oopsie chance to default (40%)
-            if not session.get("selections"):
-                oopsie_chance = 40
-                cycle_start = None
-                rhythm_chance = None
-
-            # If selections are remembered in the session, calculate oopsie chance
-            else:
-
-                # Get correct cycle start, cycle length, period length, and ovulation cycle day
-                cycle_start = get_cycle_start(session.get("cycle_start_str"))
-                cycle_length = get_cycle_length(session.get("cycle_length"))
-                period_length = get_period_length(session.get("period_length"))
-                cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
-
-                # If there is a cycle start, get cycle day and rhythm method chance
-                if cycle_start and "21" in session.get("selections"):
-                    cycle_day = get_cycle_day(get_date(i), cycle_start, cycle_length)
-                    rhythm_chance = get_rhythm_chance(cycle_day, cycle_day_ovulation)
-                else:
-                    cycle_day = None
-                    rhythm_chance = None
-
-                # Get list of oopsie chances based on user-selected method IDs
-                session["chances"] = get_chances(session.get("selections"), rhythm_chance)
-
-                # Calculate oopsie chance by multiplying chances values
-                oopsie_chance = get_oopsie(session.get("chances"))
-
-            # Add Oopsie % to calendar for the i'th day
-            events.append({
-                "title": str(oopsie_chance) + "%",
-                "date": str(get_date(i)),
-            })
-
-            # Add cycle day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
-            if cycle_start and "21" in session.get("selections"):
-                events.append({
-                    "title": "(" + str(cycle_day) + ")",
-                    "date": str(get_date(i)) + "T00:00:00",
-                })
-
-            # Add period day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
-            if cycle_start and "21" in session.get("selections") and (check_period(cycle_day, period_length)):
-                events.append({
-                    "title": "P",
-                    "date": str(get_date(i)) + "T00:00:00",
-                })
-
-            # Add ovulation day text to calendar for the i'th day if Rhythm Method (ID = 21) has been selected
-            if cycle_start and "21" in session.get("selections") and (check_ovulation(cycle_day, cycle_day_ovulation)):
-                events.append({
-                    "title": "O",
-                    "date": str(get_date(i)) + "T00:00:00",
-                })
-
-        # Save events in session
-        session["saved_events"] = events
-
-    return render_template("calendar.html", rhythm_chance=rhythm_chance, events=events)
+    return render_template("week_view.html", rhythm_chance=session.get("rhythm_chance"), current_week=current_week, last_week=last_week, next_week=next_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
 
 
 @app.route("/about")
@@ -603,29 +496,15 @@ def contact():
     return render_template("contact.html")
 
 
-def check_saved_data(date_last_saved, selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
+def check_saved_data(date_last_saved, selections_saved, cycle_start_str_saved, cycle_length_saved, period_length_saved, cycle_day_ovulation_saved):
     """Returns True if new selections match saved selections and the last save was today"""
 
     if str(today) == date_last_saved:
-        if (selections == session.get("selections_saved") and
-            cycle_start_str == session.get("cycle_start_str_saved") and
-            cycle_length == session.get("cycle_length_saved") and
-            period_length == session.get("period_length_saved") and
-            cycle_day_ovulation == session.get("cycle_day_ovulation_saved")):
-            return True
-    else:
-        return False
-
-
-def check_saved_calendar(selections, cycle_start_str, cycle_length, period_length, cycle_day_ovulation):
-    """Returns True if new selections match saved selections and the calendar has been reloaded in the last 30 days"""
-
-    if ((datetime.strptime(session.get("calendar_date_last_saved"), "%Y-%m-%d").date() + timedelta(days=30)) - today).days > 0:
-        if (selections == session.get("calendar_selections_saved") and
-            cycle_start_str == session.get("calendar_cycle_start_str_saved") and
-            cycle_length == session.get("calendar_cycle_length_saved") and
-            period_length == session.get("calendar_period_length_saved") and
-            cycle_day_ovulation == session.get("calendar_cycle_day_ovulation_saved")):
+        if (selections_saved == session.get("selections") and
+            cycle_start_str_saved == session.get("cycle_start_str") and
+            cycle_length_saved == session.get("cycle_length") and
+            period_length_saved == session.get("period_length") and
+            cycle_day_ovulation_saved == session.get("cycle_day_ovulation")):
             return True
     else:
         return False
@@ -634,7 +513,7 @@ def check_saved_calendar(selections, cycle_start_str, cycle_length, period_lengt
 def get_date(relative_days):
     """Returns the date in relation to the number of days from the current day"""
 
-    relative_date = date.today() + timedelta(days=relative_days)
+    relative_date = today + timedelta(days=relative_days)
     return relative_date
 
 
