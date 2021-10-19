@@ -118,6 +118,26 @@
           {% endif %}
           <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter a cycle day of ovulation, we will assume the midpoint of the cycle.">&#9432;</a>
         </div>
+
+        <div class="form-check">
+          <select class="form-select form-select-sm" aria-label=".form-select-sm example" style="width: 275px;" name="timezone">
+            <option selected>Select Timezone</option>
+
+            {% for tz in timezones %}
+              {% if tz[:3] == "US/" %}
+                <option value="{{ tz }}">{{ tz }}</option>
+              {% endif %}
+            {% endfor %}
+
+            {% for tz in timezones %}
+              {% if tz[:3] != "US/" %}
+                <option value="{{ tz }}">{{ tz }}</option>
+              {% endif %}
+            {% endfor %}
+
+          </select>
+        </div>
+
       </td>
     </tr>
       <tr>

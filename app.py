@@ -72,6 +72,17 @@ def make_session_permanent():
 def index():
     """Returns index, the homepage with an Oopsie chance summary based on selected options"""
 
+    # dt_utcnow = datetime.now(tz=pytz.UTC)
+    # print(dt_utcnow)
+
+    # dt_p = dt_utcnow.astimezone(pytz.timezone("US/Pacific"))
+    # print(dt_p.date())
+
+    # print(pytz.all_timezones)
+
+    # for tz in pytz.all_timezones:
+    #     print(tz)
+
     # When user clicks "Save" from Methods page...
     if request.method == "POST":
 
@@ -83,6 +94,10 @@ def index():
         session["cycle_length"] = request.form.get("cycle_length")
         session["period_length"] = request.form.get("period_length")
         session["cycle_day_ovulation"] = request.form.get("cycle_day_ovulation")
+
+        # Get rhythm method input(s) from user & remember in session
+        session["timezone"] = request.form.get("timezone")
+        print(session["timezone"])
 
         # If selections, Rhythm Method data, and day are unchanged from previous save, quick load variables from session
         if session.get("selections_date_last_saved") and check_saved_data(session.get("selections_date_last_saved"), session.get("selections_saved"), session.get("cycle_start_str_saved"), session.get("cycle_length_saved"), session.get("period_length_saved"), session.get("cycle_day_ovulation_saved")):
@@ -390,7 +405,7 @@ def methods():
             cycle_day = None
             rhythm_chance = None
 
-    return render_template("methods.html", cycle_awareness=cycle_awareness, contraception=contraception, method=method, surgical=surgical, selections=selections, cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance)
+    return render_template("methods.html", cycle_awareness=cycle_awareness, contraception=contraception, method=method, surgical=surgical, selections=selections, cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, timezones=pytz.all_timezones)
 
 
 @app.route("/clear")
