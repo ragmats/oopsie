@@ -76,7 +76,7 @@ a.svg {
 }
 
 .day_letter_box {
-    height: 40px;
+    height: 37.5px;
     display: flex;
     align-items:flex-end;
     justify-content: center;

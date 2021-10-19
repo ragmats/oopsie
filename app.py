@@ -896,6 +896,7 @@ def get_week(start_date):
 
         week[i + 1] = {
             "day_letter": str((start_date + timedelta(days=i)).strftime("%A"))[0],
+            "month_number": (start_date + timedelta(days=i)).month,
             "month_day": (start_date + timedelta(days=i)).day,
             "oopsie_chance": oopsie_chance,
             "cycle_day": cycle_day,

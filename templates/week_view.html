@@ -14,6 +14,48 @@
 
     <div class="week_container">
 
+      <h5>Last Week:</h5>
+
+      {% for day in last_week %}
+
+        <div class="day_box">
+          {% if last_week[day]["month_day"] == current_day %}
+            <div class="day_circle_on">
+          {% else %}
+            <div class="day_circle_off">
+          {% endif %}
+
+              <div class="day_letter_box">
+                <h3 style="margin: 0px;">{{ last_week[day]["day_letter"] }}</h3>
+              </div>
+
+              <p style="margin: 0px;">{{ last_week[day]["month_number"] }}/{{ last_week[day]["month_day"] }}</p>
+
+            </div>
+        </div>
+
+        <div class="day_info_box">
+
+          <div class="day_oopsie_box">
+            <p style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="Oopsie chance">{{ last_week[day]["oopsie_chance"] }}%</a></p>
+          </div>
+
+            <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ last_week[day]["cycle_day"] }})</a></p>
+            {% if last_week[day]["period"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a class="period" href="javascript:void(0)" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+            {% endif %}
+            {% if last_week[day]["ovulation"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+            {% endif %}
+
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+    <div class="week_container">
+
       <h5>Current Week:</h5>
 
       {% for day in current_week %}
@@ -29,7 +71,7 @@
                 <h3 style="margin: 0px;">{{ current_week[day]["day_letter"] }}</h3>
               </div>
 
-              <p style="margin: 0px;">{{ current_week[day]["month_day"] }}</p>
+              <p style="margin: 0px;">{{ current_week[day]["month_number"] }}/{{ current_week[day]["month_day"] }}</p>
 
             </div>
         </div>
@@ -71,7 +113,7 @@
                 <h3 style="margin: 0px;">{{ next_week[day]["day_letter"] }}</h3>
               </div>
 
-              <p style="margin: 0px;">{{ next_week[day]["month_day"] }}</p>
+              <p style="margin: 0px;">{{ next_week[day]["month_number"] }}/{{ next_week[day]["month_day"] }}</p>
 
             </div>
         </div>
@@ -79,7 +121,7 @@
         <div class="day_info_box">
 
           <div class="day_oopsie_box">
-            <p style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="Oopsie chance">{{ current_week[day]["oopsie_chance"] }}%</a></p>
+            <p style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="Oopsie chance">{{ next_week[day]["oopsie_chance"] }}%</a></p>
           </div>
 
             <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ next_week[day]["cycle_day"] }})</a></p>
@@ -87,48 +129,6 @@
               <p class="inline" style="color:red; margin: 0px;"><a class="period" href="javascript:void(0)" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
             {% endif %}
             {% if next_week[day]["ovulation"] == True %}
-              <p class="inline" style="color:red; margin: 0px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
-            {% endif %}
-
-        </div>
-
-      {% endfor %}
-
-    </div>
-
-    <div class="week_container">
-
-      <h5>Last Week:</h5>
-
-      {% for day in last_week %}
-
-        <div class="day_box">
-          {% if last_week[day]["month_day"] == current_day %}
-            <div class="day_circle_on">
-          {% else %}
-            <div class="day_circle_off">
-          {% endif %}
-
-              <div class="day_letter_box">
-                <h3 style="margin: 0px;">{{ last_week[day]["day_letter"] }}</h3>
-              </div>
-
-              <p style="margin: 0px;">{{ last_week[day]["month_day"] }}</p>
-
-            </div>
-        </div>
-
-        <div class="day_info_box">
-
-          <div class="day_oopsie_box">
-            <p style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="Oopsie chance">{{ current_week[day]["oopsie_chance"] }}%</a></p>
-          </div>
-
-            <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ last_week[day]["cycle_day"] }})</a></p>
-            {% if last_week[day]["period"] == True %}
-              <p class="inline" style="color:red; margin: 0px;"><a class="period" href="javascript:void(0)" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
-            {% endif %}
-            {% if last_week[day]["ovulation"] == True %}
               <p class="inline" style="color:red; margin: 0px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
             {% endif %}
 
