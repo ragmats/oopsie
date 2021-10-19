@@ -6,6 +6,7 @@
 from flask import Flask, render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
+import pytz
 
 # Configure application
 app = Flask(__name__)
@@ -50,7 +51,7 @@ class Methods(db.Model):
     info_source_name = db.Column(db.String(100), nullable=False)
 
 # Global date variables
-today = date.today()
+today = datetime.now().date() # changed from date.today() to work with timezones
 tomorrow = today + timedelta(days=1)
 yesterday = today - timedelta(days=1)
 todayf = today.strftime("%A, %B %d, %Y")
