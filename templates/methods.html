@@ -126,18 +126,18 @@
             {% if not timezone %}
               <option selected>UTC</option>
             {% else %}
-              <option selected>{{ timezone }}</option>
+              <option selected>{{ timezone|replace("_", " ") }}</option>
             {% endif %}
 
             {% for tz in timezones %}
               {% if tz[:3] == "US/" %}
-                <option value="{{ tz }}">{{ tz }}</option>
+                <option value="{{ tz }}">{{ tz|replace("_", " ") }}</option>
               {% endif %}
             {% endfor %}
 
             {% for tz in timezones %}
               {% if tz[:3] != "US/" %}
-                <option value="{{ tz }}">{{ tz }}</option>
+                <option value="{{ tz }}">{{ tz|replace("_", " ") }}</option>
               {% endif %}
             {% endfor %}
 

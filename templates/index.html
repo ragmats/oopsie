@@ -10,7 +10,7 @@
             <td colspan="2">
                 {% if rhythm_chance != None %}
                     <h1>TODAY</h1>
-                    <p style="font-weight:500;">{{ todayf }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Timezone is currently set to {{ timezone }}. (Change under Methods.)">&#9432;</a></p>
+                    <p style="font-weight:500;">{{ todayf }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Timezone is currently set to {{ timezone|replace("_", " ") }}. (Change under Methods.)">&#9432;</a></p>
                 {% endif %}
 
                 <h1>
