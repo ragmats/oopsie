@@ -120,8 +120,14 @@
         </div>
 
         <div class="form-check">
-          <select class="form-select form-select-sm" aria-label=".form-select-sm example" style="width: 275px;" name="timezone">
-            <option selected>Select Timezone</option>
+          <p style="margin-bottom: 2px;">Select Timezone:</p>
+          <select class="inline form-select form-select-sm" aria-label=".form-select-sm example" style="width: 270px;" name="timezone">
+
+            {% if not timezone %}
+              <option selected>UTC</option>
+            {% else %}
+              <option selected>{{ timezone }}</option>
+            {% endif %}
 
             {% for tz in timezones %}
               {% if tz[:3] == "US/" %}
@@ -136,6 +142,9 @@
             {% endfor %}
 
           </select>
+
+          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a timezone so the date changes at the correct time of day (default is UTC).">&#9432;</a>
+
         </div>
 
       </td>

@@ -10,7 +10,7 @@
 
 
   {% if oopsie_chance > 0 %}
-    {% if (100/oopsie_chance) % 1 == 0 %}
+    {% if (100/oopsie_chance) % 1 == 0 or ("{:,.1f}".format((100/oopsie_chance)))|int % 1 == 0 %}
       <!-- Format non-decimal oopsie_chance with commas -->
       <p>It's business time! Your chance of an Oopsie today is 1 out of {{ "{:,.0f}".format((100/oopsie_chance)) }}!</p>
     {% else %}

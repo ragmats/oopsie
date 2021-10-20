@@ -10,14 +10,14 @@
             <td colspan="2">
                 {% if rhythm_chance != None %}
                     <h1>TODAY</h1>
-                    <p style="font-weight:500;">{{ todayf }}</p>
+                    <p style="font-weight:500;">{{ todayf }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Timezone is currently set to {{ timezone }}. (Change under Methods.)">&#9432;</a></p>
                 {% endif %}
 
                 <h1>
                     {{ oopsie_chance }}% Oopsie!
 
                     {% if not methods %}
-                        <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Be careful! This is the default (average) Oopsie chance with no preventative methods. Your personal Oopsie chance may be much higher or lower. Personalize your Oopsie chance for more accuracy.">&#9432;</a>
+                        <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Careful! This is the default Oopsie chance with no preventative methods. Your personal Oopsie chance may be much higher or lower. You can personalize your Oopsie chance for more accuracy.">&#9432;</a>
                     {% endif %}
                 </h1>
 

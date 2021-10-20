@@ -50,18 +50,11 @@ class Methods(db.Model):
     source_name = db.Column(db.String(100), nullable=False)
     info_source_name = db.Column(db.String(100), nullable=False)
 
-# Global date variables
-today = datetime.now().date() # changed from date.today() to work with timezones
-tomorrow = today + timedelta(days=1)
-yesterday = today - timedelta(days=1)
-todayf = today.strftime("%A, %B %d, %Y")
-tomorrowf = tomorrow.strftime("%m/%d/%Y")
-yesterdayf = yesterday.strftime("%m/%d/%Y")
+# Global Oopsie default value
 default_oopsie = 3.44643
 
-# Learned from:
+# make_session_permanent() learned from:
     # https://stackoverflow.com/questions/34118093/flask-permanent-session-where-to-define-them
-
 
 @app.before_request
 def make_session_permanent():
@@ -72,16 +65,15 @@ def make_session_permanent():
 def index():
     """Returns index, the homepage with an Oopsie chance summary based on selected options"""
 
-    # dt_utcnow = datetime.now(tz=pytz.UTC)
-    # print(dt_utcnow)
+    # Get today object with correct timezone
+    today = get_today()
 
-    # dt_p = dt_utcnow.astimezone(pytz.timezone("US/Pacific"))
-    # print(dt_p.date())
-
-    # print(pytz.all_timezones)
-
-    # for tz in pytz.all_timezones:
-    #     print(tz)
+    # Set day variables with correct timezone
+    tomorrow = today + timedelta(days=1)
+    yesterday = today - timedelta(days=1)
+    todayf = today.strftime("%A, %B %d, %Y")
+    tomorrowf = tomorrow.strftime("%m/%d/%Y")
+    yesterdayf = yesterday.strftime("%m/%d/%Y")
 
     # When user clicks "Save" from Methods page...
     if request.method == "POST":
@@ -95,12 +87,19 @@ def index():
         session["period_length"] = request.form.get("period_length")
         session["cycle_day_ovulation"] = request.form.get("cycle_day_ovulation")
 
-        # Get rhythm method input(s) from user & remember in session
+        # Get timezone input from user & remember in session
         session["timezone"] = request.form.get("timezone")
-        print(session["timezone"])
+
+        # Update day variables with correct timezone
+        today = get_today()
+        tomorrow = today + timedelta(days=1)
+        yesterday = today - timedelta(days=1)
+        todayf = today.strftime("%A, %B %d, %Y")
+        tomorrowf = tomorrow.strftime("%m/%d/%Y")
+        yesterdayf = yesterday.strftime("%m/%d/%Y")
 
         # If selections, Rhythm Method data, and day are unchanged from previous save, quick load variables from session
-        if session.get("selections_date_last_saved") and check_saved_data(session.get("selections_date_last_saved"), session.get("selections_saved"), session.get("cycle_start_str_saved"), session.get("cycle_length_saved"), session.get("period_length_saved"), session.get("cycle_day_ovulation_saved")):
+        if session.get("selections_date_last_saved") and check_saved_data(today, session.get("selections_date_last_saved"), session.get("selections_saved"), session.get("cycle_start_str_saved"), session.get("cycle_length_saved"), session.get("period_length_saved"), session.get("cycle_day_ovulation_saved"), session.get("timezone_saved")):
             print("Quick load!")
             oopsie_chance = session.get("oopsie_chance")
             oopsie_chance_yesterday = session.get("oopsie_chance_yesterday")
@@ -130,6 +129,7 @@ def index():
             session["cycle_length_saved"] = session.get("cycle_length")
             session["period_length_saved"] = session.get("period_length")
             session["cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
+            session["timezone_saved"] = session.get("timezone")
 
             # Get correct cycle start, cycle length, period length, and ovulation cycle day
             cycle_start = get_cycle_start(session.get("cycle_start_str"))
@@ -302,6 +302,7 @@ def index():
                 session["cycle_length_saved"] = session.get("cycle_length")
                 session["period_length_saved"] = session.get("period_length")
                 session["cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
+                session["timezone_saved"] = session.get("timezone")
 
                 # Get correct cycle start and cycle length
                 cycle_start = get_cycle_start(session.get("cycle_start_str"))
@@ -358,12 +359,15 @@ def index():
                 oopsie_chance_yesterday = session["oopsie_chance_yesterday"] = get_oopsie(session.get("chances_yesterday"))
                 oopsie_chance_tomorrow = session["oopsie_chance_tomorrow"] = get_oopsie(session.get("chances_tomorrow"))
 
-    return render_template("index.html", todayf=todayf, yesterdayf=yesterdayf, tomorrowf=tomorrowf, oopsie_chance=oopsie_chance, oopsie_chance_yesterday=oopsie_chance_yesterday, oopsie_chance_tomorrow=oopsie_chance_tomorrow, period_today=period_today, period_yesterday=period_yesterday, period_tomorrow=period_tomorrow, ovulation_today=ovulation_today, ovulation_yesterday=ovulation_yesterday, ovulation_tomorrow=ovulation_tomorrow, methods=methods, cycle_day=cycle_day, cycle_day_yesterday=cycle_day_yesterday, cycle_day_tomorrow=cycle_day_tomorrow, cycle_day_ovulation=cycle_day_ovulation, next_ovulation=next_ovulation, next_period=next_period, rhythm_chance=rhythm_chance)
+    return render_template("index.html", timezone=session.get("timezone"), todayf=todayf, yesterdayf=yesterdayf, tomorrowf=tomorrowf, oopsie_chance=oopsie_chance, oopsie_chance_yesterday=oopsie_chance_yesterday, oopsie_chance_tomorrow=oopsie_chance_tomorrow, period_today=period_today, period_yesterday=period_yesterday, period_tomorrow=period_tomorrow, ovulation_today=ovulation_today, ovulation_yesterday=ovulation_yesterday, ovulation_tomorrow=ovulation_tomorrow, methods=methods, cycle_day=cycle_day, cycle_day_yesterday=cycle_day_yesterday, cycle_day_tomorrow=cycle_day_tomorrow, cycle_day_ovulation=cycle_day_ovulation, next_ovulation=next_ovulation, next_period=next_period, rhythm_chance=rhythm_chance)
 
 
 @app.route("/methods")
 def methods():
     """Returns methods page, where the user selects, saves, or clears method selections"""
+
+    # Get today object with correct timezone
+    today = get_today()
 
     # Get data from database
     cycle_awareness = Methods.query.filter_by(type="cycle_awareness").order_by(Methods.id).all()
@@ -405,14 +409,15 @@ def methods():
             cycle_day = None
             rhythm_chance = None
 
-    return render_template("methods.html", cycle_awareness=cycle_awareness, contraception=contraception, method=method, surgical=surgical, selections=selections, cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, timezones=pytz.all_timezones)
+    return render_template("methods.html", cycle_awareness=cycle_awareness, contraception=contraception, method=method, surgical=surgical, selections=selections, cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, timezones=pytz.all_timezones, timezone=session.get("timezone"))
 
 
 @app.route("/clear")
 def clear():
-    """Clears data saved in the session"""
+    """Clears data saved in the session and sets timezone to default UTC"""
 
     session.clear()
+    session["timezone"] = "UTC"
 
     return redirect("/methods")
 
@@ -420,6 +425,9 @@ def clear():
 @app.route("/getlucky")
 def getlucky():
     """Returns "Get Lucky" page, where the user simulates business time (intercourse) with today's Oopsie chance"""
+
+    # Get today object with correct timezone
+    today = get_today()
 
     # If no selections are remembered in the session, or first-time visit, set oopsie chance to default
     if not session.get("selections"):
@@ -464,6 +472,9 @@ def getlucky():
 @app.route("/weekview")
 def weekview():
     """Returns week view page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous, current, and next weeks."""
+
+    # Get today object with correct timezone
+    today = get_today()
 
     # If no selections are remembered in the session, or first-time visit, disable week view
     if not session.get("selections"):
@@ -512,7 +523,16 @@ def contact():
     return render_template("contact.html")
 
 
-def check_saved_data(date_last_saved, selections_saved, cycle_start_str_saved, cycle_length_saved, period_length_saved, cycle_day_ovulation_saved):
+def get_today():
+    """Sets session timezone to UTC if timezone hasn't been set and returns today object with timezone"""
+
+    if not session.get("timezone"):
+        session["timezone"] = "UTC"
+
+    return datetime.now(tz=pytz.UTC).astimezone(pytz.timezone(session.get("timezone"))).date()
+
+
+def check_saved_data(today, date_last_saved, selections_saved, cycle_start_str_saved, cycle_length_saved, period_length_saved, cycle_day_ovulation_saved, timezone_saved):
     """Returns True if new selections match saved selections and the last save was today"""
 
     if str(today) == date_last_saved:
@@ -520,17 +540,11 @@ def check_saved_data(date_last_saved, selections_saved, cycle_start_str_saved, c
             cycle_start_str_saved == session.get("cycle_start_str") and
             cycle_length_saved == session.get("cycle_length") and
             period_length_saved == session.get("period_length") and
-            cycle_day_ovulation_saved == session.get("cycle_day_ovulation")):
+            cycle_day_ovulation_saved == session.get("cycle_day_ovulation") and
+            timezone_saved == session.get("timezone")):
             return True
     else:
         return False
-
-
-def get_date(relative_days):
-    """Returns the date in relation to the number of days from the current day"""
-
-    relative_date = today + timedelta(days=relative_days)
-    return relative_date
 
 
 def get_cycle_day(day, cycle_start, cycle_length):

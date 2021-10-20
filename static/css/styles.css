@@ -31,6 +31,10 @@ a.svg {
     left:0;
   }
 
+ul {
+    margin-bottom: 0px;
+}
+
 .inline {
     display: inline-block;
 }
@@ -39,6 +43,10 @@ a.svg {
     min-width: 50px;
     max-width: 550px;
     text-align: left;
+}
+
+.li_spaced {
+    margin-bottom: 5px;
 }
 
 .week_container {
