@@ -242,7 +242,7 @@ def index():
                 method = Methods.query.filter_by(type="method").order_by(Methods.id).all()
                 surgical = Methods.query.filter_by(type="surgical procedure").order_by(Methods.id).all()
 
-                return render_template("methods.html", contraception=contraception, cycle_awareness=cycle_awareness, method=method, surgical=surgical, selections=session.get("selections"), cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, rhythm_error=rhythm_error, date_error=date_error, cycle_length_error=cycle_length_error, period_length_error=period_length_error, cycle_day_ovulation_error=cycle_day_ovulation_error, length_error=length_error)
+                return render_template("methods.html", contraception=contraception, cycle_awareness=cycle_awareness, method=method, surgical=surgical, selections=session.get("selections"), cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, rhythm_error=rhythm_error, date_error=date_error, cycle_length_error=cycle_length_error, period_length_error=period_length_error, cycle_day_ovulation_error=cycle_day_ovulation_error, length_error=length_error, timezones=pytz.all_timezones, timezone=session.get("timezone"))
 
     # When user navigates back to homepage without clicking "save" from Methods page...
     else:

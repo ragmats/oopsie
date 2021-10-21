@@ -5,13 +5,14 @@
 {% endblock %}
 
 {% block main %}
-  <h1>Methods</h1>
-  <p>Select any combination of the preventative methods below to find your Oopsie chance.</p>
-
   <form action="{{ url_for('index') }}" method="POST">
-    <table>
-      <tr>
-        <td colspan="2">
+
+    <div>
+      <h1>Methods</h1>
+      <p>Select any combination of the preventative methods below to find your Oopsie chance.</p>
+
+        <div class="method_container">
+
           <h3>Cycle Awareness</h3>
           <p>&#128161; Recommended for daily results</p>
           {% if rhythm_error %}
@@ -54,195 +55,209 @@
               {% endif %}
             {% endif %}
           {% endfor %}
-        </td>
-      </tr>
-    {% for row in cycle_awareness %}
-      <tr>
-        <td>
-          <div class="form-check">
-            {% if row.id|string in selections %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
-            {% else %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
-            {% endif %}
-            <label class="form-check-label" for="{{ row.id }}">
-              {% if rhythm_chance != None and row.id == 21 %}
-                {% if (rhythm_chance * 100)|round(5) % 1 == 0 %}
-                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|int }}% Oopsie)">&#9432;</a>
+
+          {% for row in cycle_awareness %}
+
+            <div class="form-check">
+              {% if row.id|string in selections %}
+                <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
+              {% else %}
+                <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
+              {% endif %}
+              <label class="form-check-label" for="{{ row.id }}">
+                {% if rhythm_chance != None and row.id == 21 %}
+                  {% if (rhythm_chance * 100)|round(5) % 1 == 0 %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|int }}% Oopsie)">&#9432;</a>
+                  {% else %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                  {% endif %}
                 {% else %}
-                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                  {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }}">&#9432;</a>
                 {% endif %}
-              {% else %}
-                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }}">&#9432;</a>
-              {% endif %}
-              </label>
-          </div>
-        </td>
-      </tr>
-    {% endfor %}
-    <tr>
-      <td>
-        <div class="form-check">
-          <label class="form-label" for="cycle_start">Last Period Start:</label>
-          {% if cycle_start %}
-            <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start" value="{{ cycle_start }}">
-          {% else %}
-            <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start">
-          {% endif %}
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Last period start date is required for Rhythm Method.">&#9432;</a>
-        </div>
-        <div class="form-check">
-          <label class="form-label" for="cycle_length">Cycle Length (days): </label>
-          {% if cycle_length %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="{{ cycle_length }}">
-          {% else %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="28">
-          {% endif %}
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume an average of 28 days.">&#9432;</a>
-        </div>
-        <div class="form-check">
-          <label class="form-label" for="period_length">Period Length (days): </label>
-          {% if period_length != None %}
-            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="{{ period_length }}">
-          {% else %}
-            <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="5">
-          {% endif %}
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a period length if you want to see period days on the calendar (otherwise set to zero). By default, we will assume an average of 5 days. This will not affect your Oopsie chance.">&#9432;</a>
-        </div>
-        <div class="form-check">
-          <label class="form-label" for="cycle_day_ovulation">Cycle Day of Ovulation: </label>
-          {% if cycle_day_ovulation %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="{{ cycle_day_ovulation }}">
-          {% else %}
-            <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="14">
-          {% endif %}
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter a cycle day of ovulation, we will assume the midpoint of the cycle.">&#9432;</a>
-        </div>
+                </label>
+            </div>
 
-        <div class="form-check">
-          <p style="margin-bottom: 2px;">Select Timezone:</p>
-          <select class="inline form-select form-select-sm" aria-label=".form-select-sm example" style="width: 270px;" name="timezone">
+          {% endfor %}
 
-            {% if not timezone %}
-              <option selected>UTC</option>
+          <div class="form-check">
+            <label class="form-label" for="cycle_start">Last Period Start:</label>
+            {% if cycle_start %}
+              <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start" value="{{ cycle_start }}">
             {% else %}
-              <option selected>{{ timezone|replace("_", " ") }}</option>
+              <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start">
             {% endif %}
+            <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Last period start date is required for Rhythm Method.">&#9432;</a>
+          </div>
+          <div class="form-check">
+            <label class="form-label" for="cycle_length">Cycle Length (days): </label>
+            {% if cycle_length %}
+              <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="{{ cycle_length }}">
+            {% else %}
+              <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="28">
+            {% endif %}
+            <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter the cycle length, we will assume an average of 28 days.">&#9432;</a>
+          </div>
+          <div class="form-check">
+            <label class="form-label" for="period_length">Period Length (days): </label>
+            {% if period_length != None %}
+              <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="{{ period_length }}">
+            {% else %}
+              <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="5">
+            {% endif %}
+            <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a period length if you want to see period days on the calendar (otherwise set to zero). By default, we will assume an average of 5 days. This will not affect your Oopsie chance.">&#9432;</a>
+          </div>
+          <div class="form-check">
+            <label class="form-label" for="cycle_day_ovulation">Cycle Day of Ovulation: </label>
+            {% if cycle_day_ovulation %}
+              <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="{{ cycle_day_ovulation }}">
+            {% else %}
+              <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="14">
+            {% endif %}
+            <a href="javascript:void(0)" data-bs-toggle="tooltip" title="If you don't enter a cycle day of ovulation, we will assume the midpoint of the cycle.">&#9432;</a>
+          </div>
 
-            {% for tz in timezones %}
-              {% if tz[:3] == "US/" %}
-                <option value="{{ tz }}">{{ tz|replace("_", " ") }}</option>
+          <div class="form-check">
+            <p style="margin-bottom: 2px;">Select Timezone:</p>
+            <select class="inline form-select form-select-sm" aria-label=".form-select-sm example" style="width: 270px;" name="timezone">
+
+              {% if not timezone %}
+                <option selected>UTC</option>
+              {% else %}
+                <option selected>{{ timezone|replace("_", " ") }}</option>
               {% endif %}
-            {% endfor %}
 
-            {% for tz in timezones %}
-              {% if tz[:3] != "US/" %}
-                <option value="{{ tz }}">{{ tz|replace("_", " ") }}</option>
-              {% endif %}
-            {% endfor %}
+              {% for tz in timezones %}
+                {% if tz[:3] == "US/" %}
+                  <option value="{{ tz }}">{{ tz|replace("_", " ") }}</option>
+                {% endif %}
+              {% endfor %}
 
-          </select>
+              {% for tz in timezones %}
+                {% if tz[:3] != "US/" %}
+                  <option value="{{ tz }}">{{ tz|replace("_", " ") }}</option>
+                {% endif %}
+              {% endfor %}
 
-          <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a timezone so the date changes at the correct time of day (default is UTC).">&#9432;</a>
+            </select>
+
+            <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Enter a timezone so the date changes at the correct time of day (default is UTC).">&#9432;</a>
+
+          </div>
 
         </div>
 
-      </td>
-    </tr>
-      <tr>
-        <td colspan="2">
-          <br/>
+        <div class="method_container">
+
           <h3>Other Methods</h3>
-      </td>
-    </tr>
-    {% for row in method %}
-      <tr>
-        <td>
-          <div class="form-check">
-            {% if row.id|string in selections %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
-            {% else %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
-            {% endif %}
-            <label class="form-check-label" for="{{ row.id }}">
-              {% if (row.chance * 100)|round(5) % 1 == 0 %}
-                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
-              {% else %}
-                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
-              {% endif %}
-              </label>
+
+          <div class="method_checkbox_container">
+
+            {% for row in method %}
+
+              <div class="form-check">
+                {% if row.id|string in selections %}
+                  <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
+                {% else %}
+                  <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
+                {% endif %}
+                <label class="form-check-label" for="{{ row.id }}">
+                  {% if (row.chance * 100)|round(5) % 1 == 0 %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
+                  {% else %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                  {% endif %}
+                  </label>
+              </div>
+
+            {% endfor %}
+
           </div>
-        </td>
-      </tr>
-    {% endfor %}
-    <tr>
-      <td colspan="2">
-        <br/>
-        <h3>Contraception</h3>
-      </td>
-    </tr>
-    {% for row in contraception %}
-      <tr>
-        <td>
-          <div class="form-check">
-            {% if row.id|string in selections %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
-            {% else %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
-            {% endif %}
-            <label class="form-check-label" for="{{ row.id }}">
-              {% if (row.chance * 100)|round(5) % 1 == 0 %}
-                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
-              {% else %}
-                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
-              {% endif %}
-              </label>
-          </div>
-        </td>
-      </tr>
-    {% endfor %}
-    <tr>
-      <td colspan="2">
-        <br/>
-        <h3>Surgical Procedures</h3>
-      </td>
-    </tr>
-    {% for row in surgical %}
-      <tr>
-        <td>
-          <div class="form-check">
-            {% if row.id|string in selections %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
-            {% else %}
-              <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
-            {% endif %}
-            <label class="form-check-label" for="{{ row.id }}">
-              {% if (row.chance * 100)|round(5) % 1 == 0 %}
-                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
-              {% else %}
-                {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
-              {% endif %}
-            </label>
-          </div>
-        </td>
-      </tr>
-    {% endfor %}
-    <tr>
-      <td>
-        <div class="form-check">
-          <br/><input class="form-check-input" type="checkbox" id="check_all" onclick="check_uncheck(this)">
-          <label style="font-weight:500;" class="form-check-label" for="check_all">
-              Check all
-          </label>
+
         </div>
-      </td>
-    </tr>
-    </table>
-    <br/>
-    <button type="submit" class="btn btn-secondary">Save</button> <button type="reset" class="btn btn-secondary">Undo Changes</button>
+
+        <div class="method_container">
+
+          <h3>Contraception</h3>
+
+          <div class="method_checkbox_container">
+
+            {% for row in contraception %}
+
+              <div class="form-check">
+                {% if row.id|string in selections %}
+                  <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
+                {% else %}
+                  <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
+                {% endif %}
+                <label class="form-check-label" for="{{ row.id }}">
+                  {% if (row.chance * 100)|round(5) % 1 == 0 %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
+                  {% else %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                  {% endif %}
+                  </label>
+              </div>
+
+            {% endfor %}
+
+          </div>
+
+        </div>
+
+        <div class="method_container">
+
+          <h3>Surgical Procedures</h3>
+
+          <div class="method_checkbox_container">
+
+            {% for row in surgical %}
+
+              <div class="form-check">
+                {% if row.id|string in selections %}
+                  <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
+                {% else %}
+                  <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
+                {% endif %}
+                <label class="form-check-label" for="{{ row.id }}">
+                  {% if (row.chance * 100)|round(5) % 1 == 0 %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|int }}% Oopsie)">&#9432;</a>
+                  {% else %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (row.chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                  {% endif %}
+                </label>
+              </div>
+
+            {% endfor %}
+
+          </div>
+
+        </div>
+
+        <div class="method_container method_checkbox_container">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="check_all" onclick="check_uncheck(this)">
+              <label style="font-weight:500;" class="form-check-label" for="check_all">Check all</label>
+          </div>
+
+        </div>
+
+    </div>
+
+
+    <div style="margin-bottom: 15px;">
+
+      <button type="submit" class="btn btn-secondary" style="margin-right: 10px;">Save</button>
+      <button type="reset" class="btn btn-secondary">Undo Changes</button>
+
+    </div>
+
   </form>
-  <br/>
-  <form action="{{ url_for('clear') }}" method="GET"><button type="submit" class="btn btn-secondary">Clear All Saved Data</button></form>
+
+  <div>
+    <form action="{{ url_for('clear') }}" method="GET">
+      <button type="submit" class="btn btn-secondary">Clear All Saved Data</button>
+    </form>
+  </div>
 
   <script>
       // Checks/un-checks all check-boxes

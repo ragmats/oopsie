@@ -49,6 +49,14 @@ ul {
     margin-bottom: 10px;
 }
 
+.method_container {
+    margin-bottom: 20px;
+}
+
+.method_checkbox_container {
+    margin-left: 10px;
+}
+
 .week_container {
     float: left;
     margin-right: 30px;
