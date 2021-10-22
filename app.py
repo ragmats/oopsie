@@ -23,6 +23,9 @@ app = Flask(__name__)
     # https://www.youtube.com/watch?v=eirjjyP2qcQ&ab_channel=CoreySchafer
     # https://stackoverflow.com/questions/29779155/converting-string-yyyy-mm-dd-into-datetime-python
 
+# Learned timezones/pytz from:
+    # https://www.youtube.com/watch?v=eirjjyP2qcQ&t=1168s&ab_channel=CoreySchafer
+
 # Learned session cookies from:
     # https://testdriven.io/blog/flask-sessions/
 
@@ -414,7 +417,7 @@ def methods():
 
 @app.route("/clear")
 def clear():
-    """Clears data saved in the session and sets timezone to default UTC"""
+    """Clears all data saved in the session and sets timezone to default UTC"""
 
     session.clear()
     session["timezone"] = "UTC"
@@ -471,7 +474,7 @@ def getlucky():
 
 @app.route("/weekview")
 def weekview():
-    """Returns week view page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous, current, and next weeks."""
+    """Returns week view page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous, current, and next weeks"""
 
     # Get today object with correct timezone
     today = get_today()
@@ -496,7 +499,7 @@ def weekview():
 
 @app.route("/lastweek")
 def lastweek():
-    """Returns last week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous week in narrow/mobile view."""
+    """Returns last week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous week in narrow/mobile view"""
 
     # Get today object with correct timezone
     today = get_today()
@@ -519,7 +522,7 @@ def lastweek():
 
 @app.route("/nextweek")
 def nextweek():
-    """Returns next week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the next week in narrow/mobile view."""
+    """Returns next week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the next week in narrow/mobile view"""
 
     # Get today object with correct timezone
     today = get_today()
@@ -669,7 +672,7 @@ def check_date(date_str):
 
 
 def get_cycle_start(cycle_start_session):
-    """Returns cycle start as YYYY-MM-DD formated date if it is saved in the session and a valid date, otherwise return None"""
+    """Returns cycle start as YYYY-MM-DD formatted date if it is saved in the session and a valid date, otherwise return None"""
 
     # Route check learned from:
         # https://stackoverflow.com/questions/21498694/flask-get-current-route
@@ -746,7 +749,7 @@ def check_ovulation(cycle_day, cycle_day_ovulation):
 
 
 def get_rhythm_chance(cycle_day, cycle_day_ovulation):
-    """Returns Rhythm Method chance given cycle and and ovulation day"""
+    """Returns Rhythm Method chance given cycle and ovulation day"""
 
     # Dictionary of rhythm chances relative to (on, after, and before) ovulation (ovulation = "0")
     rhythm_chances = {
