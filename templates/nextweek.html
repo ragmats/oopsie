@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Week View
+{% endblock %}
+
+{% block main %}
+  {% if rhythm_chance == None %}
+    <h1>Week View</h1>
+    <p>&#128161; To enable week-view, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
+  {% else %}
+
+    <h1>Next Week ({{ current_year }})</h1>
+
+    <div class="week_container">
+
+      <div>
+        <div>
+          <p style="margin: 0px; font-size: x-large;"><a href="{{ url_for('weekview') }}">&#129052;</a></p>
+        </div>
+      </div>
+
+      {% for day in next_week %}
+
+        <div class="day_box">
+          {% if next_week[day]["month_day"] == current_day %}
+            <div class="day_circle_on">
+          {% else %}
+            <div class="day_circle_off">
+          {% endif %}
+
+              <div class="day_letter_box">
+                <h3 style="margin: 0px;">{{ next_week[day]["day_letter"] }}</h3>
+              </div>
+
+              <p style="margin: 0px;">{{ next_week[day]["month_number"] }}/{{ next_week[day]["month_day"] }}</p>
+
+            </div>
+        </div>
+
+        <div class="day_info_box">
+
+          <div class="day_oopsie_box">
+            <p style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="Oopsie chance">{{ next_week[day]["oopsie_chance"] }}%</a></p>
+          </div>
+
+            <p class="inline" style="margin-bottom: 0px; margin-left: 10px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ next_week[day]["cycle_day"] }})</a></p>
+            {% if next_week[day]["period"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a class="period" href="javascript:void(0)" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
+            {% endif %}
+            {% if next_week[day]["ovulation"] == True %}
+              <p class="inline" style="color:red; margin: 0px;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
+            {% endif %}
+
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+  {% endif %}
+{% endblock %}

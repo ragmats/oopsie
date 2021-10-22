@@ -10,9 +10,10 @@
     <p>&#128161; To enable week-view, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
   {% else %}
 
-    <h1>Week View ({{ current_year }})</h1>
+    <h1 class="wide">Week View ({{ current_year }})</h1>
+    <h1 class="narrow">Current Week ({{ current_year }})</h1>
 
-    <div class="week_container">
+    <div class="wide week_container">
 
       <h5>Last Week:</h5>
 
@@ -56,7 +57,16 @@
 
     <div class="week_container">
 
-      <h5>Current Week:</h5>
+      <h5 class="wide">Current Week:</h5>
+
+      <div class="narrow">
+        <div style="float: left;">
+          <p style="margin: 0px; font-size: x-large;"><a href="{{ url_for('lastweek') }}">&#129052;</a></p>
+        </div>
+        <div style="text-align: right;">
+          <p style="margin: 0px; font-size: x-large;"><a href="{{ url_for('nextweek') }}">&#129054;</a></p>
+        </div>
+      </div>
 
       {% for day in current_week %}
 
@@ -96,7 +106,7 @@
 
     </div>
 
-    <div class="week_container">
+    <div class="wide week_container">
 
       <h5>Next Week:</h5>
 

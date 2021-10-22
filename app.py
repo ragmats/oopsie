@@ -494,6 +494,52 @@ def weekview():
     return render_template("week_view.html", rhythm_chance=session.get("rhythm_chance"), current_week=current_week, last_week=last_week, next_week=next_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
 
 
+@app.route("/lastweek")
+def lastweek():
+    """Returns last week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous week in narrow/mobile view."""
+
+    # Get today object with correct timezone
+    today = get_today()
+
+    # If no selections are remembered in the session, or first-time visit, disable week view
+    if not session.get("selections"):
+        last_week = None
+
+    # If selections are remembered in the session, load oopsie chance
+    else:
+
+        # Get the most recent Sunday as a starting point for the current week
+        Sunday = get_Sunday(today)
+
+        # Get week-view info for current week, last week, and next week
+        last_week = get_week(Sunday - timedelta(days=7))
+
+    return render_template("lastweek.html", rhythm_chance=session.get("rhythm_chance"), last_week=last_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
+
+
+@app.route("/nextweek")
+def nextweek():
+    """Returns next week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the next week in narrow/mobile view."""
+
+    # Get today object with correct timezone
+    today = get_today()
+
+    # If no selections are remembered in the session, or first-time visit, disable week view
+    if not session.get("selections"):
+        next_week = None
+
+    # If selections are remembered in the session, load oopsie chance
+    else:
+
+        # Get the most recent Sunday as a starting point for the current week
+        Sunday = get_Sunday(today)
+
+        # Get week-view info for current week, last week, and next week
+        next_week = get_week(Sunday + timedelta(days=7))
+
+    return render_template("nextweek.html", rhythm_chance=session.get("rhythm_chance"), next_week=next_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
+
+
 @app.route("/about")
 def about():
     """Returns about page, with information about this app"""

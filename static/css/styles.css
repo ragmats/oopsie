@@ -120,3 +120,15 @@ body {
 th, td {
     color: #bdc0c5;
 }
+
+@media (max-width: 768px) {
+    .wide {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .narrow {
+        display: none;
+    }
+}
