@@ -16,7 +16,7 @@
           <h3>Cycle Awareness</h3>
           <p>&#128161; Recommended for daily results</p>
           {% if rhythm_error %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
               {{ rhythm_error }}
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -24,31 +24,31 @@
           {% for row in cycle_awareness %}
             {% if row.id|string in selections %}
               {% if date_error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
                   {{ date_error }}
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               {% endif %}
               {% if cycle_length_error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
                   {{ cycle_length_error }}
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               {% endif %}
               {% if period_length_error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
                   {{ period_length_error }}
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               {% endif %}
               {% if cycle_day_ovulation_error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
                   {{ cycle_day_ovulation_error }}
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               {% endif %}
               {% if length_error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
                   {{ length_error }}
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>

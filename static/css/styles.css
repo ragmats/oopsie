@@ -57,6 +57,10 @@ ul {
     margin-left: 10px;
 }
 
+.error_message {
+    max-width: 600px;
+}
+
 .week_container {
     float: left;
     margin-right: 30px;

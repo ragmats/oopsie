@@ -480,7 +480,7 @@ def weekview():
     today = get_today()
 
     # If no selections are remembered in the session, or first-time visit, disable week view
-    if not session.get("selections"):
+    if not session.get("selections") or not session.get("cycle_start_str"):
         current_week = last_week = next_week = None
 
     # If selections are remembered in the session, load oopsie chance
@@ -494,6 +494,7 @@ def weekview():
         last_week = get_week(Sunday - timedelta(days=7))
         next_week = get_week(Sunday + timedelta(days=7))
 
+    print(session.get("cycle_start"))
     return render_template("week_view.html", rhythm_chance=session.get("rhythm_chance"), current_week=current_week, last_week=last_week, next_week=next_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
 
 
@@ -505,7 +506,7 @@ def lastweek():
     today = get_today()
 
     # If no selections are remembered in the session, or first-time visit, disable week view
-    if not session.get("selections"):
+    if not session.get("selections") or not session.get("cycle_start_str"):
         last_week = None
 
     # If selections are remembered in the session, load oopsie chance
@@ -528,7 +529,7 @@ def nextweek():
     today = get_today()
 
     # If no selections are remembered in the session, or first-time visit, disable week view
-    if not session.get("selections"):
+    if not session.get("selections") or not session.get("cycle_start_str"):
         next_week = None
 
     # If selections are remembered in the session, load oopsie chance

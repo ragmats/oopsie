@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block main %}
-  {% if rhythm_chance == None %}
+  {% if not next_week %}
     <h1>Week View</h1>
-    <p>&#128161; To enable week-view, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
+    <p>&#128161; To enable Week-View, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
   {% else %}
 
     <h1>Next Week</h1>
