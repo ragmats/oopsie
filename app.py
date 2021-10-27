@@ -34,7 +34,6 @@ app.secret_key = "NDQc#@5~cgKT)mv2qG<c(B@!"
 # Configure Flask session cookies
 app.config["SESSION_PERMANENT"] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=10000)
-# app.config['SESSION_COOKIE_NAME'] = "my_session"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///oopsie.db"
 
@@ -140,7 +139,7 @@ def index():
             period_length = get_period_length(session.get("period_length"))
             cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
 
-            # If there is a cycle start, get cycle day, next ovulation, next period, and rhythm method chance
+            # If there is a cycle start and rhythm metheod was selected, get cycle day, next ovulation, next period, and rhythm method chance
             if cycle_start and "21" in session.get("selections"):
                 cycle_day = session["cycle_day"] = get_cycle_day(today, cycle_start, cycle_length)
                 cycle_day_yesterday = session["cycle_day_yesterday"] = get_cycle_day(yesterday, cycle_start, cycle_length)
