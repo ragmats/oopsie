@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-  <form action="{{ url_for('index') }}" method="POST">
+  <form action="{{ url_for('index_post') }}" method="POST">
 
     <div>
       <h1>Methods</h1>
@@ -15,74 +15,41 @@
 
           <h3>Cycle Awareness</h3>
           <p>&#128161; Recommended for daily results</p>
-          {% if rhythm_error %}
+
+          {% for error in rhythm_errors %}
             <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
-              {{ rhythm_error }}
+              {{ rhythm_errors[error] }}
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-          {% endif %}
-          {% for row in cycle_awareness %}
-            {% if row.id|string in selections %}
-              {% if date_error %}
-                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
-                  {{ date_error }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endif %}
-              {% if cycle_length_error %}
-                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
-                  {{ cycle_length_error }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endif %}
-              {% if period_length_error %}
-                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
-                  {{ period_length_error }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endif %}
-              {% if cycle_day_ovulation_error %}
-                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
-                  {{ cycle_day_ovulation_error }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endif %}
-              {% if length_error %}
-                <div class="alert alert-danger alert-dismissible fade show error_message" role="alert">
-                  {{ length_error }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endif %}
-            {% endif %}
           {% endfor %}
 
-          {% for row in cycle_awareness %}
-
+          {% for row in data.cycle_awareness %}
             <div class="form-check">
-              {% if row.id|string in selections %}
+              {% if rhythm_errors and rhythm_errors["cycle_start_error"] %}
+                <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
+              {% elif row.id|string in selections %}
                 <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
               {% else %}
                 <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}">
               {% endif %}
               <label class="form-check-label" for="{{ row.id }}">
-                {% if rhythm_chance != None and row.id == 21 %}
-                  {% if (rhythm_chance * 100)|round(5) % 1 == 0 %}
-                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|int }}% Oopsie)">&#9432;</a>
+                {% if cycle.rhythm_chance != None and row.id == 21 %}
+                  {% if (cycle.rhythm_chance * 100)|round(5) % 1 == 0 %}
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (cycle.rhythm_chance * 100)|int }}% Oopsie)">&#9432;</a>
                   {% else %}
-                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (rhythm_chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
+                    {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }} ({{ (cycle.rhythm_chance * 100)|round(5) }}% Oopsie)">&#9432;</a>
                   {% endif %}
                 {% else %}
                   {{ row.method }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="{{ row.info }}">&#9432;</a>
                 {% endif %}
                 </label>
             </div>
-
           {% endfor %}
 
           <div class="form-check">
             <label class="form-label" style="margin-top: 5px;" for="cycle_start">Last Period Start:</label>
-            {% if cycle_start %}
-              <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start" value="{{ cycle_start }}">
+            {% if cycle.cycle_start %}
+              <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start" value="{{ cycle.cycle_start }}">
             {% else %}
               <input class="form-input" style="width: 150px;" type="date" id="cycle_start" name="cycle_start">
             {% endif %}
@@ -90,8 +57,8 @@
           </div>
           <div class="form-check">
             <label class="form-label" for="cycle_length">Cycle Length (days): </label>
-            {% if cycle_length %}
-              <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="{{ cycle_length }}">
+            {% if cycle.cycle_length != None %}
+              <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="{{ cycle.cycle_length }}">
             {% else %}
               <input class="form-input" style="width: 50px;" type="number" id="cycle_length" name="cycle_length" value="28">
             {% endif %}
@@ -99,8 +66,8 @@
           </div>
           <div class="form-check">
             <label class="form-label" for="period_length">Period Length (days): </label>
-            {% if period_length != None %}
-              <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="{{ period_length }}">
+            {% if cycle.period_length != None %}
+              <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="{{ cycle.period_length }}">
             {% else %}
               <input class="form-input" style="width: 50px;" type="number" id="period_length" name="period_length" value="5">
             {% endif %}
@@ -108,8 +75,8 @@
           </div>
           <div class="form-check">
             <label class="form-label" for="cycle_day_ovulation">Cycle Day of Ovulation: </label>
-            {% if cycle_day_ovulation %}
-              <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="{{ cycle_day_ovulation }}">
+            {% if cycle.cycle_day_ovulation %}
+              <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="{{ cycle.cycle_day_ovulation }}">
             {% else %}
               <input class="form-input" style="width: 50px;" type="number" id="cycle_day_ovulation" name="cycle_day_ovulation" value="14">
             {% endif %}
@@ -152,7 +119,7 @@
 
           <div class="method_checkbox_container">
 
-            {% for row in method %}
+            {% for row in data.method %}
 
               <div class="form-check">
                 {% if row.id|string in selections %}
@@ -181,8 +148,7 @@
 
           <div class="method_checkbox_container">
 
-            {% for row in contraception %}
-
+            {% for row in data.contraception %}
               <div class="form-check">
                 {% if row.id|string in selections %}
                   <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
@@ -197,7 +163,6 @@
                   {% endif %}
                   </label>
               </div>
-
             {% endfor %}
 
           </div>
@@ -210,8 +175,7 @@
 
           <div class="method_checkbox_container">
 
-            {% for row in surgical %}
-
+            {% for row in data.surgical %}
               <div class="form-check">
                 {% if row.id|string in selections %}
                   <input class="form-check-input" type="checkbox" value="{{ row.id }}" name="method_selected" id="{{ row.id }}" checked>
@@ -226,7 +190,6 @@
                   {% endif %}
                 </label>
               </div>
-
             {% endfor %}
 
           </div>

@@ -9,13 +9,13 @@
     <div>
 
         <div style="margin-bottom: 40px;">
-            {% if rhythm_chance != None %}
+            {% if cycle.rhythm_chance or cycle.rhythm_chance == 0 %}
                 <h1>TODAY</h1>
-                <p style="font-weight:500;">{{ todayf }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Timezone is currently set to {{ timezone|replace("_", " ") }}.">&#9432;</a></p>
+                <p style="font-weight:500;">{{ day.todayf }} <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Timezone is currently set to {{ timezone|replace("_", " ") }}.">&#9432;</a></p>
             {% endif %}
 
             <h1>
-                {{ oopsie_chance }}% Oopsie!
+                {{ oopsie.chance_today }}% Oopsie!
 
                 {% if not methods %}
                     <a href="javascript:void(0)" data-bs-toggle="tooltip" title="This is the default Oopsie chance with no preventative methods. Your personal Oopsie chance may be much higher or lower. Personalize your Oopsie chance for more accuracy.">&#9432;</a>
@@ -27,11 +27,11 @@
                         <p>Based on your selected Oopsie methods (preventions):</p>
                         <ul>
                             {% for method in methods %}
-                                {% if rhythm_chance != None and method.id == 21 %}
-                                    {% if (rhythm_chance|float * 100)|round(5) % 1 == 0 %}
-                                        <li>{{ method.method }} ({{ (rhythm_chance * 100)|int }}%)</li>
+                                {% if (cycle.rhythm_chance or cycle.rhythm_chance == 0) and method.id == 21 %}
+                                    {% if (cycle.rhythm_chance|float * 100)|round(5) % 1 == 0 %}
+                                        <li>{{ method.method }} ({{ (cycle.rhythm_chance * 100)|int }}%)</li>
                                     {% else %}
-                                        <li>{{ method.method }} ({{ (rhythm_chance * 100)|round(5) }}%)</li>
+                                        <li>{{ method.method }} ({{ (cycle.rhythm_chance * 100)|round(5) }}%)</li>
                                     {% endif %}
                                 {% else %}
                                     {% if (method.chance * 100)|round(5) % 1 == 0 %}
@@ -44,31 +44,31 @@
                         </ul>
             ">Why this?</a>
 
-                        {% if cycle_day and methods %}
+                        {% if cycle.cycle_day and methods %}
                             | <a href="javascript:void(0)" data-bs-toggle="tooltip" data-bs-html="true" title="
                                 <ul>
-                                    {% if cycle_day %}
-                                        <li>Current Cycle Day: {{ cycle_day }}</li>
+                                    {% if cycle.cycle_day %}
+                                        <li>Current Cycle Day: {{ cycle.cycle_day }}</li>
                                     {% endif %}
-                                    {% if next_ovulation %}
-                                        <li>Next Ovulation: {{ next_ovulation }} (cycle day {{ cycle_day_ovulation }})</li>
+                                    {% if cycle.next_ovulation %}
+                                        <li>Next Ovulation: {{ cycle.next_ovulation }} (cycle day {{ cycle.cycle_day_ovulation }})</li>
                                     {% endif %}
-                                    {% if next_period %}
-                                        <li>Next Period Start: {{ next_period }}</li>
+                                    {% if cycle.next_period %}
+                                        <li>Next Period Start: {{ cycle.next_period }}</li>
                                     {% endif %}
                                 </ul>
                             ">Cycle</a>
-                            {% if period_today %}
+                            {% if cycle.period_today %}
                                 <p class="inline" style="color:red;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
                             {% endif %}
-                            {% if ovulation_today %}
+                            {% if cycle.ovulation_today %}
                                 <p class="inline" style="color:red;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
                             {% endif %}
                         {% endif %}
 
-                        {% if rhythm_chance == 0 %}
+                        {% if cycle.rhythm_chance == 0 %}
                             | <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Yes. Based on your Rhythm Method settings, today is outside the fertile window. We recommend that you double check your Rhythm Method settings and/or review how we approach the fertile window in the Disclaimer section.">Is it really zero?</a>
-                        {% elif oopsie_chance == 0 %}
+                        {% elif oopsie.chance_today == 0 %}
                             | <a href="javascript:void(0)" data-bs-toggle="tooltip" title="Your Oopsie chance, less than .00001% (1 out of 10 million), has been rounded to zero.">Is it really zero?</a>
                         {% endif %}
 
@@ -77,35 +77,35 @@
                         <p>&#128161; <a href="{{ url_for('methods') }}">Personlize</a> your Oopsie chance.</p>
                     {% endif %}
 
-                {% if methods and rhythm_chance == None %}
+                {% if methods and cycle.rhythm_chance == None %}
                     <p style="margin-top: 10px;">&#128161; For daily results, <a href="{{ url_for('methods') }}">select Rhythm Method (Cycle Awareness)</a>.</p>
                 {% endif %}
             </div>
 
-        {% if rhythm_chance != None %}
+        {% if cycle.rhythm_chance or cycle.rhythm_chance == 0 %}
 
             <div style="float: left; margin-right: 30px;">
                 <h5 style="margin: 0px">YESTERDAY</h5>
-                <p style="margin-bottom: 7px">{{ yesterdayf }}</p>
-                <h6>{{ oopsie_chance_yesterday }}%</h6>
-                <p class="inline"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ cycle_day_yesterday }})</a></p>
-                {% if period_yesterday %}
+                <p style="margin-bottom: 7px">{{ day.yesterdayf }}</p>
+                <h6>{{ oopsie.chance_yesterday }}%</h6>
+                <p class="inline"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ cycle.cycle_day_yesterday }})</a></p>
+                {% if cycle.period_yesterday %}
                     <p class="inline" style="color:red;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
                 {% endif %}
-                {% if ovulation_yesterday %}
+                {% if cycle.ovulation_yesterday %}
                     <p class="inline" style="color:red;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
                 {% endif %}
             </div>
 
             <div>
                 <h5 style="margin: 0px">TOMORROW</h5>
-                <p style="margin-bottom: 7px">{{ tomorrowf }}</p>
-                <h6>{{ oopsie_chance_tomorrow }}%</h6>
-                <p class="inline"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ cycle_day_tomorrow }})</a></p>
-                {% if period_tomorrow %}
+                <p style="margin-bottom: 7px">{{ day.tomorrowf }}</p>
+                <h6>{{ oopsie.chance_tomorrow }}%</h6>
+                <p class="inline"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="cycle day">({{ cycle.cycle_day_tomorrow }})</a></p>
+                {% if cycle.period_tomorrow %}
                     <p class="inline" style="color:red;"><a class="period" href="#" data-bs-toggle="tooltip" title="period day">&#11044;</a></p>
                 {% endif %}
-                {% if ovulation_tomorrow %}
+                {% if cycle.ovulation_tomorrow %}
                     <p class="inline" style="color:red;"><a href="javascript:void(0)" data-bs-toggle="tooltip" title="ovulation day">&#9675;</a></p>
                 {% endif %}
             </div>

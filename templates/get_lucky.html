@@ -6,16 +6,16 @@
 
 {% block main %}
   <h1>Get Lucky</h1>
-  <h2>{{ oopsie_chance }}% Oopsie!</h2>
+  <h2>{{ oopsie.chance_today }}% Oopsie!</h2>
 
 
-  {% if oopsie_chance > 0 %}
-    {% if (100/oopsie_chance) % 1 == 0 or ("{:,.1f}".format((100/oopsie_chance)))|int % 1 == 0 %}
+  {% if oopsie.chance_today > 0 %}
+    {% if (100/oopsie.chance_today) % 1 == 0 or ("{:,.1f}".format((100/oopsie.chance_today)))|int % 1 == 0 %}
       <!-- Format non-decimal oopsie_chance with commas -->
-      <p>It's business time! Your chance of an Oopsie today is 1 out of {{ "{:,.0f}".format((100/oopsie_chance)) }}!</p>
+      <p>It's business time! Your chance of an Oopsie today is 1 out of {{ "{:,.0f}".format((100/oopsie.chance_today)) }}!</p>
     {% else %}
       <!-- Format decimal oopsie_chance with commas -->
-      <p>It's business time! Your chance of an Oopsie today is 1 out of {{ "{:,.1f}".format((100/oopsie_chance)) }}!</p>
+      <p>It's business time! Your chance of an Oopsie today is 1 out of {{ "{:,.1f}".format((100/oopsie.chance_today)) }}!</p>
     {% endif %}
   {% else %}
     <p>It's business time! You have no chance of an Oopsie today!</p>
@@ -76,8 +76,8 @@
       let multiplier = 0;
       let oopsie_chance = null;
 
-      if ({{ oopsie_chance }} > 0) {
-        oopsie_chance = {{ oopsie_chance }};
+      if ({{ oopsie.chance_today }} > 0) {
+        oopsie_chance = {{ oopsie.chance_today }};
       }
 
         // When roll is clicked, display result

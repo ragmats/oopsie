@@ -3,6 +3,8 @@
 #  stevencoy@gmail.com  #
 #########################
 
+# from re import X
+from collections import namedtuple
 from flask import Flask, render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
@@ -40,8 +42,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///oopsie.db"
 # Initialize the database
 db = SQLAlchemy(app)
 
-# Create database model
 class Methods(db.Model):
+    """Database model"""
     id = db.Column(db.Integer, primary_key=True)
     method = db.Column(db.String(100), nullable=False)
     type = db.Column(db.String(20), nullable=False)
@@ -51,6 +53,68 @@ class Methods(db.Model):
     info_source = db.Column(db.String(100), nullable=False)
     source_name = db.Column(db.String(100), nullable=False)
     info_source_name = db.Column(db.String(100), nullable=False)
+
+class Day():
+    """Today and relative days"""
+    def __init__(self, today):
+        self.today = today
+        self.tomorrow = today + timedelta(days=1)
+        self.yesterday = today - timedelta(days=1)
+        self.todayf = today.strftime("%A, %B %d, %Y")
+        self.tomorrowf = self.tomorrow.strftime("%m/%d/%Y")
+        self.yesterdayf = self.yesterday.strftime("%m/%d/%Y")
+
+class Data():
+    """Main method/prevention categories from the database"""
+    def __init__(self):
+        self.cycle_awareness = Methods.query.filter_by(type="cycle_awareness").order_by(Methods.id).all()
+        self.contraception = Methods.query.filter_by(type="contraception").order_by(Methods.id).all()
+        self.method = Methods.query.filter_by(type="method").order_by(Methods.id).all()
+        self.surgical = Methods.query.filter_by(type="surgical procedure").order_by(Methods.id).all()
+
+class Cycle():
+    """Cycle elements"""
+    def __init__(self, day):
+
+        if session.get("cycle_start_str"):
+            self.cycle_start = get_cycle_start(session.get("cycle_start_str"))
+        else:
+            self.cycle_start = None
+
+        self.cycle_length = get_cycle_length(session.get("cycle_length"))
+        self.period_length = get_period_length(session.get("period_length"))
+        self.cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), self.cycle_length)
+        self.cycle_day = get_cycle_day(day.today, self.cycle_start, self.cycle_length)
+        self.cycle_day_yesterday = get_cycle_day(day.yesterday, self.cycle_start, self.cycle_length)
+        self.cycle_day_tomorrow = get_cycle_day(day.tomorrow, self.cycle_start, self.cycle_length)
+        self.next_ovulation = get_next_ovulation(day.today, self.cycle_day, self.cycle_day_ovulation, self.cycle_length)
+        self.next_period = get_next_period(day.today, self.cycle_day, self.cycle_length)
+        self.period_today = check_period(self.cycle_day, self.period_length)
+        self.period_yesterday = check_period(self.cycle_day_yesterday, self.period_length)
+        self.period_tomorrow = check_period(self.cycle_day_tomorrow, self.period_length)
+        self.ovulation_today = check_ovulation(self.cycle_day, self.cycle_day_ovulation)
+        self.ovulation_yesterday = check_ovulation(self.cycle_day_yesterday, self.cycle_day_ovulation)
+        self.ovulation_tomorrow = check_ovulation(self.cycle_day_tomorrow, self.cycle_day_ovulation)
+
+        # If rhythm method is selected with a cycle start, calculate rhythm chance
+        if session.get("selections") and "21" in session.get("selections") and self.cycle_start:
+            self.rhythm_chance = get_rhythm_chance(self.cycle_day, self.cycle_day_ovulation)
+            self.rhythm_chance_yesterday = get_rhythm_chance(self.cycle_day_yesterday, self.cycle_day_ovulation)
+            self.rhythm_chance_tomorrow = get_rhythm_chance(self.cycle_day_tomorrow, self.cycle_day_ovulation)
+        else:
+            self.rhythm_chance = None
+            self.rhythm_chance_yesterday = None
+            self.rhythm_chance_tomorrow = None
+
+class Oopsie():
+    """Oopsie chances"""
+    def __init__(self):
+        if session.get("selections"):
+            self.chance_today = get_oopsie(session.get("chances"))
+            self.chance_yesterday = get_oopsie(session.get("chances_yesterday"))
+            self.chance_tomorrow = get_oopsie(session.get("chances_tomorrow"))
+        else:
+            self.chance_today = default_oopsie
 
 # Global Oopsie default value
 default_oopsie = 3.44643
@@ -63,319 +127,108 @@ def make_session_permanent():
     """Makes session permanent before each request"""
     session.permanent = True
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    """Returns index, the homepage with an Oopsie chance summary based on selected options"""
 
-    # Get today object with correct timezone
-    today = get_today()
+@app.route("/", methods=["GET"])
+def index_get():
+    """Returns homepage when no selections are remembered in the session or first-time visit"""
 
-    # Set day variables with correct timezone
-    tomorrow = today + timedelta(days=1)
-    yesterday = today - timedelta(days=1)
-    todayf = today.strftime("%A, %B %d, %Y")
-    tomorrowf = tomorrow.strftime("%m/%d/%Y")
-    yesterdayf = yesterday.strftime("%m/%d/%Y")
+    # If no selections are remembered (or first-time visit), set oopsie chance and cycle to default
+    if not session.get("selections"):
 
-    # When user clicks "Save" from Methods page...
-    if request.method == "POST":
+        #Get oopsie object
+        oopsie = Oopsie()
 
-        # Get selections (method IDs) from user checkboxes & remember in session
-        session["selections"] = request.form.getlist("method_selected")
+        # Set cycle to None so correct template content loads
+        cycle = None
 
-        # Get rhythm method input(s) from user & remember in session
-        session["cycle_start_str"] = request.form.get("cycle_start")
-        session["cycle_length"] = request.form.get("cycle_length")
-        session["period_length"] = request.form.get("period_length")
-        session["cycle_day_ovulation"] = request.form.get("cycle_day_ovulation")
+        return render_template("index.html", oopsie=oopsie, cycle=cycle)
 
-        # Get timezone input from user & remember in session
-        session["timezone"] = request.form.get("timezone")
-
-        # Update day variables with correct timezone
-        today = get_today()
-        tomorrow = today + timedelta(days=1)
-        yesterday = today - timedelta(days=1)
-        todayf = today.strftime("%A, %B %d, %Y")
-        tomorrowf = tomorrow.strftime("%m/%d/%Y")
-        yesterdayf = yesterday.strftime("%m/%d/%Y")
-
-        # If selections, Rhythm Method data, and day are unchanged from previous save, quick load variables from session
-        if session.get("selections_date_last_saved") and check_saved_data(today, session.get("selections_date_last_saved"), session.get("selections_saved"), session.get("cycle_start_str_saved"), session.get("cycle_length_saved"), session.get("period_length_saved"), session.get("cycle_day_ovulation_saved"), session.get("timezone_saved")):
-            print("Quick load!")
-            oopsie_chance = session.get("oopsie_chance")
-            oopsie_chance_yesterday = session.get("oopsie_chance_yesterday")
-            oopsie_chance_tomorrow = session.get("oopsie_chance_tomorrow")
-            period_today = session.get("period_today")
-            period_yesterday = session.get("period_yesterday")
-            period_tomorrow = session.get("period_tomorrow")
-            ovulation_today = session.get("ovulation_today")
-            ovulation_yesterday = session.get("ovulation_yesterday")
-            ovulation_tomorrow = session.get("ovulation_tomorrow")
-            methods = session.get("methods")
-            cycle_day = session.get("cycle_day")
-            cycle_day_yesterday = session.get("cycle_day_yesterday")
-            cycle_day_tomorrow = session.get("cycle_day_tomorrow")
-            cycle_day_ovulation = session.get("cycle_day_ovulation")
-            next_ovulation = session.get("next_ovulation")
-            next_period = session.get("next_period")
-            rhythm_chance = session.get("rhythm_chance")
-
-        # If new selections or day, reload
-        else:
-            # Set last save to today and reload saved session variables
-            print("New load!")
-            session["selections_date_last_saved"] = str(today)
-            session["selections_saved"] = session.get("selections")
-            session["cycle_start_str_saved"] = session.get("cycle_start_str")
-            session["cycle_length_saved"] = session.get("cycle_length")
-            session["period_length_saved"] = session.get("period_length")
-            session["cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
-            session["timezone_saved"] = session.get("timezone")
-
-            # Get correct cycle start, cycle length, period length, and ovulation cycle day
-            cycle_start = get_cycle_start(session.get("cycle_start_str"))
-            cycle_length = get_cycle_length(session.get("cycle_length"))
-            period_length = get_period_length(session.get("period_length"))
-            cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
-
-            # If there is a cycle start and rhythm metheod was selected, get cycle day, next ovulation, next period, and rhythm method chance
-            if cycle_start and "21" in session.get("selections"):
-                cycle_day = session["cycle_day"] = get_cycle_day(today, cycle_start, cycle_length)
-                cycle_day_yesterday = session["cycle_day_yesterday"] = get_cycle_day(yesterday, cycle_start, cycle_length)
-                cycle_day_tomorrow = session["cycle_day_tomorrow"] = get_cycle_day(tomorrow, cycle_start, cycle_length)
-                next_ovulation = session["next_ovulation"] = get_next_ovulation(today, cycle_day, cycle_day_ovulation, cycle_length)
-                next_period = session["next_period"] = get_next_period(today, cycle_day, cycle_length)
-                period_today = session["period_today"] = check_period(cycle_day, period_length)
-                period_yesterday = session["period_yesterday"] = check_period(cycle_day_yesterday, period_length)
-                period_tomorrow = session["period_tomorrow"] = check_period(cycle_day_tomorrow, period_length)
-                ovulation_today = session["ovulation_today"] = check_ovulation(cycle_day, cycle_day_ovulation)
-                ovulation_yesterday = session["ovulation_yesterday"] = check_ovulation(cycle_day_yesterday, cycle_day_ovulation)
-                ovulation_tomorrow = session["ovulation_tomorrow"] = check_ovulation(cycle_day_tomorrow, cycle_day_ovulation)
-                rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
-                rhythm_chance_yesterday = session["rhythm_chance_yesterday"] = get_rhythm_chance(cycle_day_yesterday, cycle_day_ovulation)
-                rhythm_chance_tomorrow = session["rhythm_chance_tomorrow"] = get_rhythm_chance(cycle_day_tomorrow, cycle_day_ovulation)
-
-            else:
-                cycle_day = session["cycle_day"] = None
-                cycle_day_yesterday = session["cycle_day_yesterday"] = None
-                cycle_day_tomorrow = session["cycle_day_tomorrow"] = None
-                next_ovulation = session["next_ovulation"] = None
-                next_period = session["next_period"] = None
-                period_today = session["period_today"] = False
-                period_yesterday = session["period_yesterday"] = False
-                period_tomorrow = session["period_tomorrow"] = False
-                ovulation_today = session["ovulation_today"] = False
-                ovulation_yesterday = session["ovulation_yesterday"] = False
-                ovulation_tomorrow = session["ovulation_tomorrow"] = False
-                rhythm_chance = session["rhythm_chance"] = None
-                rhythm_chance_yesterday = session["rhythm_chance_yesterday"] = None
-                rhythm_chance_tomorrow = session["rhythm_chance_tomorrow"] = None
-
-            # If methods were selected on methods page...
-            if session.get("selections"):
-                # Get list of oopsie chances based on user-selected method IDs
-                session["chances"] = get_chances(session.get("selections"), rhythm_chance)
-                session["chances_yesterday"] = get_chances(session.get("selections"), rhythm_chance_yesterday)
-                session["chances_tomorrow"] = get_chances(session.get("selections"), rhythm_chance_tomorrow)
-
-                # Get rows of methods from database based on user-selected method IDs
-                methods = Methods.query.filter(Methods.id.in_(session.get("selections"))).order_by(Methods.method).all()
-
-                # Convert methods object to Python dictionary so it is JSON serializable (required for session["methods"])
-                session["methods"] = make_serializable(methods)
-
-                # Calculate oopsie chance by multiplying chances values
-                oopsie_chance = session["oopsie_chance"] = get_oopsie(session.get("chances"))
-                oopsie_chance_yesterday = session["oopsie_chance_yesterday"] = get_oopsie(session.get("chances_yesterday"))
-                oopsie_chance_tomorrow = session["oopsie_chance_tomorrow"] = get_oopsie(session.get("chances_tomorrow"))
-
-            # If no methods were selected on Methods page, set oopsie chance to default
-            else:
-                oopsie_chance = oopsie_chance_yesterday = oopsie_chance_tomorrow = default_oopsie
-                session["oopsie_chance"] = session["oopsie_chance_yesterday"] = session["oopsie_chance_tomorrow"] = default_oopsie
-                methods = session["methods"] = None
-
-            # If date or length error
-            if "21" in session.get("selections") and (not session.get("cycle_start_str") or not check_date(session.get("cycle_start_str")) or cycle_length < 1 or period_length < 0 or cycle_day_ovulation < 1 or period_length > cycle_length or cycle_day_ovulation > cycle_length):
-
-                # If date is blank and Rhythm Method was selected, send back to Methods page with an error
-                if "21" in session.get("selections") and not session.get("cycle_start_str"):
-                    rhythm_error = "Last period start date is required for Rhythm Method."
-                else:
-                    rhythm_error = None
-
-                # If date is not a valid date, send back to Methods page with an error
-                if not check_date(session.get("cycle_start_str")):
-                    date_error = "Please enter a valid date in format YYYY-MM-DD."
-                else:
-                    date_error = None
-
-                # If cycle length is not greater than zero, send back to Methods page with an error
-                if cycle_length < 1:
-                    cycle_length_error = "Cycle length must be greater than zero."
-                else:
-                    cycle_length_error = None
-
-                # If period length is not greater than zero, send back to Methods page with an error
-                if period_length < 0:
-                    period_length_error = "Period length can't a be negative number."
-                else:
-                    period_length_error = None
-
-                # If cycle length is not greater than zero, send back to Methods page with an error
-                if cycle_day_ovulation < 1:
-                    cycle_day_ovulation_error = "Cycle day of ovulation must be greater than zero."
-                else:
-                    cycle_day_ovulation_error = None
-
-                 # If period length or cycle day of ovulation are more than the cycle length, send back to Methods page with an error
-                if period_length > cycle_length or cycle_day_ovulation > cycle_length:
-                    length_error = "Period length and cycle day of ovulation must be within the cycle length."
-                else:
-                    length_error = None
-
-                # Reset selections date last save in case the same wrong cycle start is saved more than once
-                session["selections_date_last_saved"] = None
-
-                # Get data from database for display on Methods page
-                cycle_awareness = Methods.query.filter_by(type="cycle_awareness").order_by(Methods.id).all()
-                contraception = Methods.query.filter_by(type="contraception").order_by(Methods.id).all()
-                method = Methods.query.filter_by(type="method").order_by(Methods.id).all()
-                surgical = Methods.query.filter_by(type="surgical procedure").order_by(Methods.id).all()
-
-                return render_template("methods.html", contraception=contraception, cycle_awareness=cycle_awareness, method=method, surgical=surgical, selections=session.get("selections"), cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, rhythm_error=rhythm_error, date_error=date_error, cycle_length_error=cycle_length_error, period_length_error=period_length_error, cycle_day_ovulation_error=cycle_day_ovulation_error, length_error=length_error, timezones=pytz.all_timezones, timezone=session.get("timezone"))
-
-    # When user navigates back to homepage without clicking "save" from Methods page...
+    # If selections are remembered in the session, load oopsie chance
     else:
 
-        # If no selections are remembered in the session, or first-time visit, set oopsie chance to default
-        if not session.get("selections"):
-            oopsie_chance = oopsie_chance_yesterday = oopsie_chance_tomorrow = default_oopsie
-            session["oopsie_chance"] = session["oopsie_chance_yesterday"] = session["oopsie_chance_tomorrow"] = default_oopsie
-            methods = session["methods"] = None
-            cycle_day = session["cycle_day"] = None
-            cycle_day_yesterday = session["cycle_day_yesterday"] = None
-            cycle_day_tomorrow = session["cycle_day_tomorrow"] = None
-            cycle_day_ovulation = session["cycle_day_ovulation"] = None
-            next_ovulation = session["next_ovulation"] = None
-            next_period = session["next_period"] = None
-            period_today = session["period_today"] = False
-            period_yesterday = session["period_yesterday"] = False
-            period_tomorrow = session["period_tomorrow"] = False
-            ovulation_today = session["ovulation_today"] = False
-            ovulation_yesterday = session["ovulation_yesterday"] = False
-            ovulation_tomorrow = session["ovulation_tomorrow"] = False
-            rhythm_chance = session["rhythm_chance"] = None
-            rhythm_chance_yesterday = session["rhythm_chance_yesterday"] = None
-            rhythm_chance_tomorrow = session["rhythm_chance_tomorrow"] = None
+        # Gather frequently used objects (today, day, and cycle) into a named tuple
+        object = gather_objects()
 
-        # If selections are remembered in the session, load oopsie chance
-        else:
+        # Get methods object and save chances in session
+        methods = get_methods(object)
 
-            # If day is unchanged from previous save, quick load variables from session
-            if session.get("selections_date_last_saved") == str(today):
-                print("Quick load!")
-                oopsie_chance = session.get("oopsie_chance")
-                oopsie_chance_yesterday = session.get("oopsie_chance_yesterday")
-                oopsie_chance_tomorrow = session.get("oopsie_chance_tomorrow")
-                period_today = session.get("period_today")
-                period_yesterday = session.get("period_yesterday")
-                period_tomorrow = session.get("period_tomorrow")
-                ovulation_today = session.get("ovulation_today")
-                ovulation_yesterday = session.get("ovulation_yesterday")
-                ovulation_tomorrow =session.get("ovulation_tomorrow")
-                methods = session.get("methods")
-                cycle_day = session.get("cycle_day")
-                cycle_day_yesterday = session.get("cycle_day_yesterday")
-                cycle_day_tomorrow = session.get("cycle_day_tomorrow")
-                cycle_day_ovulation = session.get("cycle_day_ovulation")
-                next_ovulation = session.get("next_ovulation")
-                next_period = session.get("next_period")
-                rhythm_chance = session.get("rhythm_chance")
+        #Get oopsie object
+        oopsie = Oopsie()
 
-            # If new day, reload
-            else:
-                # Set last save to today and reload saved session variables
-                print("New load!")
-                session["selections_date_last_saved"] = str(today)
-                session["selections_saved"] = session.get("selections")
-                session["cycle_start_str_saved"] = session.get("cycle_start_str")
-                session["cycle_length_saved"] = session.get("cycle_length")
-                session["period_length_saved"] = session.get("period_length")
-                session["cycle_day_ovulation_saved"] = session.get("cycle_day_ovulation")
-                session["timezone_saved"] = session.get("timezone")
+    return render_template("index.html", timezone=session.get("timezone"), day=object.day, oopsie=oopsie, cycle=object.cycle, methods=methods)
 
-                # Get correct cycle start and cycle length
-                cycle_start = get_cycle_start(session.get("cycle_start_str"))
-                cycle_length = get_cycle_length(session.get("cycle_length"))
-                period_length = get_period_length(session.get("period_length"))
-                cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
 
-                # If there is a cycle start, get cycle day, next ovulation, next period, and rhythm method chance
-                if cycle_start and "21" in session.get("selections"):
-                    cycle_day = session["cycle_day"] = get_cycle_day(today, cycle_start, cycle_length)
-                    cycle_day_yesterday = session["cycle_day_yesterday"] = get_cycle_day(yesterday, cycle_start, cycle_length)
-                    cycle_day_tomorrow = session["cycle_day_tomorrow"] = get_cycle_day(tomorrow, cycle_start, cycle_length)
-                    next_ovulation = session["next_ovulation"] = get_next_ovulation(today, cycle_day, cycle_day_ovulation, cycle_length)
-                    next_period = session["next_period"] = get_next_period(today, cycle_day, cycle_length)
-                    period_today = session["period_today"] = check_period(cycle_day, period_length)
-                    period_yesterday = session["period_yesterday"] = check_period(cycle_day_yesterday, period_length)
-                    period_tomorrow = session["period_tomorrow"] = check_period(cycle_day_tomorrow, period_length)
-                    ovulation_today = session["ovulation_today"] = check_ovulation(cycle_day, cycle_day_ovulation)
-                    ovulation_yesterday = session["ovulation_yesterday"] = check_ovulation(cycle_day_yesterday, cycle_day_ovulation)
-                    ovulation_tomorrow = session["ovulation_tomorrow"] = check_ovulation(cycle_day_tomorrow, cycle_day_ovulation)
-                    rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
-                    rhythm_chance_yesterday = session["rhythm_chance_yesterday"] = get_rhythm_chance(cycle_day_yesterday, cycle_day_ovulation)
-                    rhythm_chance_tomorrow = session["rhythm_chance_tomorrow"] = get_rhythm_chance(cycle_day_tomorrow, cycle_day_ovulation)
+@app.route("/", methods=["POST"])
+def index_post():
+    """Returns homepage when user clicks "Save" from Methods page"""
 
-                else:
-                    cycle_day = session["cycle_day"] = None
-                    cycle_day_yesterday = session["cycle_day_yesterday"] = None
-                    cycle_day_tomorrow = session["cycle_day_tomorrow"] = None
-                    next_ovulation = session["next_ovulation"] = None
-                    next_period = session["next_period"] = None
-                    period_today = session["period_today"] = False
-                    period_yesterday = session["period_yesterday"] = False
-                    period_tomorrow = session["period_tomorrow"] = False
-                    ovulation_today = session["ovulation_today"] = False
-                    ovulation_yesterday = session["ovulation_yesterday"] = False
-                    ovulation_tomorrow = session["ovulation_tomorrow"] = False
-                    rhythm_chance = session["rhythm_chance"] = None
-                    rhythm_chance_yesterday = session["rhythm_chance_yesterday"] = None
-                    rhythm_chance_tomorrow = session["rhythm_chance_tomorrow"] = None
+    # Get user selections & remember in session
+    session["selections"] = request.form.getlist("method_selected")
+    session["cycle_start_str"] = request.form.get("cycle_start")
+    session["cycle_length"] = request.form.get("cycle_length")
+    session["period_length"] = request.form.get("period_length")
+    session["cycle_day_ovulation"] = request.form.get("cycle_day_ovulation")
+    session["timezone"] = request.form.get("timezone")
 
-                # Get list of oopsie chances based on user-selected method IDs
-                session["chances"] = get_chances(session.get("selections"), rhythm_chance)
-                session["chances_yesterday"] = get_chances(session.get("selections"), rhythm_chance_yesterday)
-                session["chances_tomorrow"] = get_chances(session.get("selections"), rhythm_chance_tomorrow)
+    # Gather frequently used objects (today, day, and cycle) into a named tuple
+    object = gather_objects()
 
-                # Get rows of methods from database based on user-selected method IDs
-                methods = Methods.query.filter(Methods.id.in_(session.get("selections"))).order_by(Methods.method).all()
+    # If methods were selected on methods page, get methods object and save chances in session
+    if session.get("selections"):
 
-                # Convert methods object to Python dictionary so it is JSON serializable (required for session["methods"])
-                session["methods"] = make_serializable(methods)
+        methods = get_methods(object)
 
-                # Calculate oopsie chance by multiplying chances values
-                oopsie_chance = session["oopsie_chance"] = get_oopsie(session.get("chances"))
-                oopsie_chance_yesterday = session["oopsie_chance_yesterday"] = get_oopsie(session.get("chances_yesterday"))
-                oopsie_chance_tomorrow = session["oopsie_chance_tomorrow"] = get_oopsie(session.get("chances_tomorrow"))
+    # Set methods to None so template still loads correctly
+    else:
+        methods = None
 
-    return render_template("index.html", timezone=session.get("timezone"), todayf=todayf, yesterdayf=yesterdayf, tomorrowf=tomorrowf, oopsie_chance=oopsie_chance, oopsie_chance_yesterday=oopsie_chance_yesterday, oopsie_chance_tomorrow=oopsie_chance_tomorrow, period_today=period_today, period_yesterday=period_yesterday, period_tomorrow=period_tomorrow, ovulation_today=ovulation_today, ovulation_yesterday=ovulation_yesterday, ovulation_tomorrow=ovulation_tomorrow, methods=methods, cycle_day=cycle_day, cycle_day_yesterday=cycle_day_yesterday, cycle_day_tomorrow=cycle_day_tomorrow, cycle_day_ovulation=cycle_day_ovulation, next_ovulation=next_ovulation, next_period=next_period, rhythm_chance=rhythm_chance)
+    #Get oopsie object
+    oopsie = Oopsie()
+
+    # Validate rhythm method inputs and return methods template if there are errors
+    if "21" in session.get("selections") and (not session.get("cycle_start_str") or not check_date(session.get("cycle_start_str")) or object.cycle.cycle_length < 1 or object.cycle.period_length < 0 or object.cycle.cycle_day_ovulation < 1 or object.cycle.period_length > object.cycle.cycle_length or object.cycle.cycle_day_ovulation > object.cycle.cycle_length):
+
+        # Create dictionary of rhythm method input errors
+        rhythm_errors = {}
+
+        # If cycle/period start is blank and Rhythm Method was selected, send back to Methods page with an error
+        if "21" in session.get("selections") and not session.get("cycle_start_str"):
+            rhythm_errors["cycle_start_error"] = "Last period start date is required if Rhythm Method is selected."
+
+            # Remove and un-check rhythm method from the selections in case user navigates away from this page
+            session.get("selections").remove("21")
+
+        # If date is not a valid date, send back to Methods page with an error
+        if not check_date(session.get("cycle_start_str")):
+            rhythm_errors["date_error"] = "Please enter a valid date in format YYYY-MM-DD."
+
+        # If cycle length is not greater than zero, send back to Methods page with an error
+        if object.cycle.cycle_length != None and object.cycle.cycle_length < 1:
+            rhythm_errors["cycle_length_error"] = "Cycle length must be greater than zero."
+
+        # If period length is not greater than zero, send back to Methods page with an error
+        if object.cycle.period_length < 0:
+            rhythm_errors["period_length_error"] = "Period length can't a be negative number."
+
+        # If cycle length is not greater than zero, send back to Methods page with an error
+        if object.cycle.cycle_day_ovulation < 1:
+            rhythm_errors["cycle_day_ovulation_error"] = "Cycle day of ovulation must be greater than zero."
+
+        # If period length or cycle day of ovulation are more than the cycle length, send back to Methods page with an error
+        if object.cycle.period_length > object.cycle.cycle_length or object.cycle.cycle_day_ovulation > object.cycle.cycle_length:
+            rhythm_errors["length_error"] = "Period length and cycle day of ovulation must be within the cycle length."
+
+        # Get data object for methods template
+        data = Data()
+
+        return render_template("methods.html", data=data, selections=session.get("selections"), cycle=object.cycle, rhythm_errors=rhythm_errors, timezones=pytz.all_timezones, timezone=session.get("timezone"))
+
+    return render_template("index.html", timezone=session.get("timezone"), day=object.day, oopsie=oopsie, cycle=object.cycle, methods=methods)
 
 
 @app.route("/methods")
 def methods():
     """Returns methods page, where the user selects, saves, or clears method selections"""
-
-    # Get today object with correct timezone
-    today = get_today()
-
-    # Get data from database
-    cycle_awareness = Methods.query.filter_by(type="cycle_awareness").order_by(Methods.id).all()
-    contraception = Methods.query.filter_by(type="contraception").order_by(Methods.id).all()
-    method = Methods.query.filter_by(type="method").order_by(Methods.id).all()
-    surgical = Methods.query.filter_by(type="surgical procedure").order_by(Methods.id).all()
 
     # Set selections if remembered in the session, otherwise set to empty
     if session.get("selections"):
@@ -383,35 +236,13 @@ def methods():
     else:
         selections = []
 
-    # Get correct cycle start, cycle length, period length, and ovulation cycle day
-    cycle_start = get_cycle_start(session.get("cycle_start_str"))
-    cycle_length = get_cycle_length(session.get("cycle_length"))
-    period_length = get_period_length(session.get("period_length"))
-    cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
+    # Create instance of Data class
+    data = Data()
 
-    # If day is the same, quick load rhythm chance for tooltip display
-    if session.get("methods_date_last_saved") == str(today):
-        print("Quick load!")
-        if session.get("rhythm_chance") != None and cycle_start:
-            rhythm_chance = session.get("rhythm_chance")
-        else:
-            rhythm_chance = None
+    # Gather frequently used objects (today, day, and cycle) into a named tuple
+    object = gather_objects()
 
-    # If new day, reload
-    else:
-        # Set last save to today
-        print("New load!")
-        session["methods_date_last_saved"] = str(today)
-
-        # If there is a cycle start, get cycle day and rhythm method chance
-        if cycle_start and "21" in session.get("selections"):
-            cycle_day = get_cycle_day(today, cycle_start, cycle_length)
-            rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
-        else:
-            cycle_day = None
-            rhythm_chance = None
-
-    return render_template("methods.html", cycle_awareness=cycle_awareness, contraception=contraception, method=method, surgical=surgical, selections=selections, cycle_start=cycle_start, cycle_length=cycle_length, period_length=period_length, cycle_day_ovulation=cycle_day_ovulation, rhythm_chance=rhythm_chance, timezones=pytz.all_timezones, timezone=session.get("timezone"))
+    return render_template("methods.html", data=data, selections=selections, cycle=object.cycle, timezones=pytz.all_timezones, timezone=session.get("timezone"))
 
 
 @app.route("/clear")
@@ -428,119 +259,88 @@ def clear():
 def getlucky():
     """Returns "Get Lucky" page, where the user simulates business time (intercourse) with today's Oopsie chance"""
 
-    # Get today object with correct timezone
-    today = get_today()
+    # Gather frequently used objects (today, day, and cycle) into a named tuple
+    object = gather_objects()
 
-    # If no selections are remembered in the session, or first-time visit, set oopsie chance to default
-    if not session.get("selections"):
-        oopsie_chance = default_oopsie
+    # If there is a rhythm chance, in case Get Lucky is reloaded first on a new day, refresh list of chances in the session with updated rhythm chance for today
+    if object.cycle.rhythm_chance != None:
+        session["chances"] = get_chances(session.get("selections"), object.cycle.rhythm_chance)
 
-    # If selections are remembered in the session, load oopsie chance
-    else:
+    #Get oopsie object
+    oopsie = Oopsie()
 
-        # If day is unchanged from previous save, quick load variables from session
-        if session.get("lucky_date_last_saved") == str(today):
-            print("Quick load!")
-            oopsie_chance = session.get("oopsie_chance")
-
-        # If new day, reload
-        else:
-            # Set last save to today
-            print("New load!")
-            session["lucky_date_last_saved"] = str(today)
-
-            # Get correct cycle start, cycle length, and ovulation cycle day
-            cycle_start = get_cycle_start(session.get("cycle_start_str"))
-            cycle_length = get_cycle_length(session.get("cycle_length"))
-            cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
-
-            # If there is a cycle start, get cycle day and rhythm method chance
-            if cycle_start and "21" in session.get("selections"):
-                cycle_day = get_cycle_day(today, cycle_start, cycle_length)
-                rhythm_chance = session["rhythm_chance"] = get_rhythm_chance(cycle_day, cycle_day_ovulation)
-            else:
-                cycle_day = None
-                rhythm_chance = None
-
-            # Get list of oopsie chances based on user-selected method IDs
-            session["chances"] = get_chances(session.get("selections"), rhythm_chance)
-
-            # Calculate oopsie chance by multiplying chances values
-            oopsie_chance = get_oopsie(session.get("chances"))
-
-    return render_template("get_lucky.html", oopsie_chance=oopsie_chance)
+    return render_template("get_lucky.html", oopsie=oopsie)
 
 
 @app.route("/weekview")
 def weekview():
     """Returns week view page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous, current, and next weeks"""
 
-    # Get today object with correct timezone
-    today = get_today()
+    # Gather frequently used objects (today, day, and cycle) into a named tuple
+    object = gather_objects()
 
-    # If no selections are remembered in the session, or first-time visit, disable week view
-    if not session.get("selections") or not session.get("cycle_start_str"):
+    # If rhythm chance is None, disable week view
+    if object.cycle.rhythm_chance == None:
         current_week = last_week = next_week = None
 
     # If selections are remembered in the session, load oopsie chance
     else:
 
         # Get the most recent Sunday as a starting point for the current week
-        Sunday = get_Sunday(today)
+        sunday = get_sunday(object.today)
 
         # Get week-view info for current week, last week, and next week
-        current_week = get_week(Sunday)
-        last_week = get_week(Sunday - timedelta(days=7))
-        next_week = get_week(Sunday + timedelta(days=7))
+        current_week = get_week(sunday)
+        last_week = get_week(sunday - timedelta(days=7))
+        next_week = get_week(sunday + timedelta(days=7))
 
-    print(session.get("cycle_start"))
-    return render_template("week_view.html", rhythm_chance=session.get("rhythm_chance"), current_week=current_week, last_week=last_week, next_week=next_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
+    return render_template("week_view.html", current_week=current_week, last_week=last_week, next_week=next_week, current_day=object.today.day, current_month=object.today.strftime("%B"), current_year=object.today.year)
 
 
 @app.route("/lastweek")
 def lastweek():
     """Returns last week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the previous week in narrow/mobile view"""
 
-    # Get today object with correct timezone
-    today = get_today()
+    # Gather frequently used objects (today, day, and cycle) into a named tuple
+    object = gather_objects()
 
-    # If no selections are remembered in the session, or first-time visit, disable week view
-    if not session.get("selections") or not session.get("cycle_start_str"):
+    # If rhythm chance is None, disable week view
+    if object.cycle.rhythm_chance == None:
         last_week = None
 
     # If selections are remembered in the session, load oopsie chance
     else:
 
         # Get the most recent Sunday as a starting point for the current week
-        Sunday = get_Sunday(today)
+        sunday = get_sunday(object.today)
 
         # Get week-view info for current week, last week, and next week
-        last_week = get_week(Sunday - timedelta(days=7))
+        last_week = get_week(sunday - timedelta(days=7))
 
-    return render_template("lastweek.html", rhythm_chance=session.get("rhythm_chance"), last_week=last_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
+    return render_template("lastweek.html", last_week=last_week, current_day=object.today.day, current_month=object.today.strftime("%B"), current_year=object.today.year)
 
 
 @app.route("/nextweek")
 def nextweek():
     """Returns next week page, where the user views Oopsie chances, cycle days, ovulation days, and period days for the next week in narrow/mobile view"""
 
-    # Get today object with correct timezone
-    today = get_today()
+    # Gather frequently used objects (today, day, and cycle) into a named tuple
+    object = gather_objects()
 
-    # If no selections are remembered in the session, or first-time visit, disable week view
-    if not session.get("selections") or not session.get("cycle_start_str"):
+    # If rhythm chance is None, disable week view
+    if object.cycle.rhythm_chance == None:
         next_week = None
 
     # If selections are remembered in the session, load oopsie chance
     else:
 
         # Get the most recent Sunday as a starting point for the current week
-        Sunday = get_Sunday(today)
+        sunday = get_sunday(object.today)
 
         # Get week-view info for current week, last week, and next week
-        next_week = get_week(Sunday + timedelta(days=7))
+        next_week = get_week(sunday + timedelta(days=7))
 
-    return render_template("nextweek.html", rhythm_chance=session.get("rhythm_chance"), next_week=next_week, current_day=today.day, current_month=today.strftime("%B"), current_year=today.year)
+    return render_template("nextweek.html", next_week=next_week, current_day=object.today.day, current_month=object.today.strftime("%B"), current_year=object.today.year)
 
 
 @app.route("/about")
@@ -555,6 +355,7 @@ def sources():
     """Returns sources page, which lists all sources used in the database"""
 
     data = Methods.query.order_by(Methods.method).all()
+
     return render_template("sources.html", data=data)
 
 
@@ -572,6 +373,21 @@ def contact():
     return render_template("contact.html")
 
 
+def gather_objects():
+    """Returns a named tuple of frequently used today, day, and cycle objects"""
+
+    # Get today object with correct timezone and instances of Day and Cycle class
+    today = get_today()
+    day = Day(today)
+    cycle = Cycle(day)
+
+    #Create named tuple
+    Object = namedtuple("Objects", ["today", "day", "cycle"])
+    object = Object(today, day, cycle)
+
+    return object
+
+
 def get_today():
     """Sets session timezone to UTC if timezone hasn't been set and returns today object with timezone"""
 
@@ -581,80 +397,89 @@ def get_today():
     return datetime.now(tz=pytz.UTC).astimezone(pytz.timezone(session.get("timezone"))).date()
 
 
-def check_saved_data(today, date_last_saved, selections_saved, cycle_start_str_saved, cycle_length_saved, period_length_saved, cycle_day_ovulation_saved, timezone_saved):
-    """Returns True if new selections match saved selections and the last save was today"""
+def get_methods(object):
+    """Returns methods object based on user-selected method IDs and saves chances in the session"""
 
-    if str(today) == date_last_saved:
-        if (selections_saved == session.get("selections") and
-            cycle_start_str_saved == session.get("cycle_start_str") and
-            cycle_length_saved == session.get("cycle_length") and
-            period_length_saved == session.get("period_length") and
-            cycle_day_ovulation_saved == session.get("cycle_day_ovulation") and
-            timezone_saved == session.get("timezone")):
-            return True
-    else:
-        return False
+    # Get rows of methods from database based on user-selected method IDs
+    methods = Methods.query.filter(Methods.id.in_(session.get("selections"))).order_by(Methods.method).all()
+
+    # Get list of oopsie chances based on user-selected method IDs
+    session["chances"] = get_chances(session.get("selections"), object.cycle.rhythm_chance)
+    session["chances_yesterday"] = get_chances(session.get("selections"), object.cycle.rhythm_chance_yesterday)
+    session["chances_tomorrow"] = get_chances(session.get("selections"), object.cycle.rhythm_chance_tomorrow)
+
+    return methods
 
 
 def get_cycle_day(day, cycle_start, cycle_length):
     """Returns the cycle day given cycle start and length"""
 
-    # If cycle start is in the past...
-    if ((day - cycle_start).days) >= 0:
-        # If cycle start is more than one cycle away from day...
-        if ((day - cycle_start).days + 1) > cycle_length:
-            cycle_day = ((day - cycle_start).days) % cycle_length + 1
-        # If cycle start is in the same cycle as day...
-        else:
-            cycle_day = (day - cycle_start).days + 1
-        return cycle_day
-
-    # If cycle start is in the future...
+    if cycle_start == None or cycle_length == 0:
+        return None
     else:
-        # If cycle start is more than one cycle away from day...
-        if ((day - cycle_start).days * -1) > cycle_length:
-            # If duration/cycle length is zero, set cycle day to 1...
-            if (((day - cycle_start).days * -1) % cycle_length) == 0:
-                cycle_day = 1
+        # If cycle start is in the past...
+        if ((day - cycle_start).days) >= 0:
+            # If cycle start is more than one cycle away from day...
+            if ((day - cycle_start).days + 1) > cycle_length:
+                cycle_day = ((day - cycle_start).days) % cycle_length + 1
+            # If cycle start is in the same cycle as day...
             else:
-                cycle_day = cycle_length - (((day - cycle_start).days * -1) % cycle_length) + 1
-        # If cycle start is in the same cycle as day...
+                cycle_day = (day - cycle_start).days + 1
+            return cycle_day
+
+        # If cycle start is in the future...
         else:
-            cycle_day = (day - cycle_start).days + cycle_length + 1
-        return cycle_day
+            # If cycle start is more than one cycle away from day...
+            if ((day - cycle_start).days * -1) > cycle_length:
+                # If duration/cycle length is zero, set cycle day to 1...
+                if (((day - cycle_start).days * -1) % cycle_length) == 0:
+                    cycle_day = 1
+                else:
+                    cycle_day = cycle_length - (((day - cycle_start).days * -1) % cycle_length) + 1
+            # If cycle start is in the same cycle as day...
+            else:
+                cycle_day = (day - cycle_start).days + cycle_length + 1
+            return cycle_day
 
 
 def get_next_ovulation(today, cycle_day, cycle_day_ovulation, cycle_length):
     """Returns next ovulation date when cycle day matches cycle day ovulation"""
 
-    for day in range(cycle_length):
-        # If value is within the cycle length
-        if cycle_day + day <= cycle_length:
-            if cycle_day + day == cycle_day_ovulation:
-                next_ovulation = date.strftime(today + timedelta(days=day), "%m/%d/%y")
-                return next_ovulation
-        # If value exceeds cycle length
-        else:
-            if (cycle_day + day) % cycle_length == cycle_day_ovulation:
-                next_ovulation = date.strftime(today + timedelta(days=day), "%m/%d/%y")
-                return next_ovulation
+    if cycle_day == None:
+        return None
+    else:
+        for day in range(cycle_length):
+            # If value is within the cycle length
+            if cycle_day + day <= cycle_length:
+                if cycle_day + day == cycle_day_ovulation:
+                    next_ovulation = date.strftime(today + timedelta(days=day), "%m/%d/%y")
+                    return next_ovulation
+
+            # If value exceeds cycle length
+            else:
+                if (cycle_day + day) % cycle_length == cycle_day_ovulation:
+                    next_ovulation = date.strftime(today + timedelta(days=day), "%m/%d/%y")
+                    return next_ovulation
 
 
 def get_next_period(today, cycle_day, cycle_length):
     """Returns next period start date given cycle day and length"""
 
-    # Look for a cycle day 1 within a window of days equal to the cycle length
-    for day in range(cycle_length):
-        # If value is within the cycle length
-        if cycle_day + day <= cycle_length:
-            if cycle_day + day == 1:
-                next_period = date.strftime(today + timedelta(days=day), "%m/%d/%y")
-                return next_period
-        # If value exceeds cycle length
-        else:
-            if (cycle_day + day) % cycle_length == 1:
-                next_period = date.strftime(today + timedelta(days=day), "%m/%d/%y")
-                return next_period
+    if cycle_day == None:
+        return None
+    else:
+        # Look for a cycle day 1 within a window of days equal to the cycle length
+        for day in range(cycle_length):
+            # If value is within the cycle length
+            if cycle_day + day <= cycle_length:
+                if cycle_day + day == 1:
+                    next_period = date.strftime(today + timedelta(days=day), "%m/%d/%y")
+                    return next_period
+            # If value exceeds cycle length
+            else:
+                if (cycle_day + day) % cycle_length == 1:
+                    next_period = date.strftime(today + timedelta(days=day), "%m/%d/%y")
+                    return next_period
 
 
 def check_date(date_str):
@@ -729,13 +554,16 @@ def get_cycle_day_ovulation(cycle_day_ovulation_session, cycle_length):
 
 
 def check_period(cycle_day, period_length):
-    """Returns True if given cycle day is a period day"""
+    """Returns True if given cycle day is within the period length"""
 
     # Return True if cycle is within the period length
-    if cycle_day <= period_length:
-        return True
+    if cycle_day == None:
+        return
     else:
-        return False
+        if cycle_day <= period_length:
+            return True
+        else:
+            return False
 
 
 def check_ovulation(cycle_day, cycle_day_ovulation):
@@ -819,7 +647,7 @@ def get_oopsie(chances):
     return round(oopsie_chance, 5)
 
 
-def get_Sunday(date):
+def get_sunday(date):
     """Returns the most recent Sunday, as a date object, given a date object"""
 
     # If the date isn't Sunday (week day 6), find date of most recent Sunday
@@ -832,22 +660,21 @@ def get_Sunday(date):
 def get_week(start_date):
     """Returns a dictionary for a week with week-view data given a starting date"""
 
+    # Gather frequently used objects (today, day, and cycle) into a named tuple
+    object = gather_objects()
+
     # Create empty week dictionary
     week = {}
 
     # Iterate through each day of week dictionary for 7 days
     for i in range(7):
 
-        # Get correct cycle start, cycle length, period length, ovulation cycle day, cycle day, and rhythm chance
-        cycle_start = get_cycle_start(session.get("cycle_start_str"))
-        cycle_length = get_cycle_length(session.get("cycle_length"))
-        period_length = get_period_length(session.get("period_length"))
-        cycle_day_ovulation = get_cycle_day_ovulation(session.get("cycle_day_ovulation"), cycle_length)
-        cycle_day = get_cycle_day(start_date + timedelta(days=i), cycle_start, cycle_length)
-        rhythm_chance = get_rhythm_chance(cycle_day, cycle_day_ovulation)
+        # Update cycle object for day i
+        object.cycle.cycle_day = get_cycle_day(start_date + timedelta(days=i), object.cycle.cycle_start, object.cycle.cycle_length)
+        object.cycle.rhythm_chance = get_rhythm_chance(object.cycle.cycle_day, object.cycle.cycle_day_ovulation)
 
         # Get list of oopsie chances based on user-selected method IDs
-        session["chances"] = get_chances(session.get("selections"), rhythm_chance)
+        session["chances"] = get_chances(session.get("selections"), object.cycle.rhythm_chance)
 
         # Calculate oopsie chance by multiplying chances values
         oopsie_chance = get_oopsie(session.get("chances"))
@@ -857,33 +684,9 @@ def get_week(start_date):
             "month_number": (start_date + timedelta(days=i)).month,
             "month_day": (start_date + timedelta(days=i)).day,
             "oopsie_chance": oopsie_chance,
-            "cycle_day": cycle_day,
-            "period": check_period(cycle_day, period_length),
-            "ovulation": check_ovulation(cycle_day, cycle_day_ovulation)
+            "cycle_day": object.cycle.cycle_day,
+            "period": check_period(object.cycle.cycle_day, object.cycle.period_length),
+            "ovulation": check_ovulation(object.cycle.cycle_day, object.cycle.cycle_day_ovulation)
         }
 
     return week
-
-
-def make_serializable(object):
-    """Returns JSON serializable value given database object"""
-
-    session_dict = {}
-    session_list=[]
-
-    for row in object:
-        session_dict = {
-            "id": row.id,
-            "method": row.method,
-            "type": row.type,
-            "chance": row.chance,
-            "source": row.source,
-            "info": row.info,
-            "info_source": row.info_source,
-            "source_name": row.source_name,
-            "info_source_name": row.info_source_name}
-
-        session_list.append(session_dict)
-
-    # Return a list of dictionaries
-    return session_list
